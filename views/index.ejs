@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<h1 id="header"><%= title %></h1>
+<div id ="search">
+    <form id="resultSpeech">
+        Compare with <input type="text" id="result_span" class="final" name="result_span" value="#hashtag"></input>
+        <button id="searchBtn" class="btn btn-success">+</button>
+    </form>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-4">
+            <div id="feed"><a class="twitter-timeline" href="https://twitter.com/hashtag/Trump" data-widget-id="784548254222544900">#Trump
+                    Tweets</a>
+                <script>!function (d, s, id) {
+                        var js, fjs = d.getElementsByTagName(s)[0], p = /^http:/.test(d.location) ? 'http' : 'https';
+                        if (!d.getElementById(id)) {
+                            js = d.createElement(s);
+                            js.id = id;
+                            js.src = p + "://platform.twitter.com/widgets.js";
+                            fjs.parentNode.insertBefore(js, fjs);
+                        }
+                    }(document, "script", "twitter-wjs");</script></div>
+            <div id="pop"><span id="pos">38%</span>-<span id="neg">62%</span></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="feed">            <a class="twitter-timeline"  href="https://twitter.com/hashtag/Clinton" data-widget-id="784594855125217280">#Clinton Tweets</a>
+                <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+            </div>
+            <div id="pop"><span id="pos">62%</span>-<span id="neg">38%</span></div>
+        </div>
+        <div class="col-sm-4">
+            <div id="feed"            <a class="twitter-timeline"  href="https://twitter.com/hashtag/goldenretriever" data-widget-id="784595978363994116">#goldenretriever Tweets</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+        </div>
+            <div id="pop"><span id="pos">99.9%</span>-<span id="neg">0.1%</span></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
