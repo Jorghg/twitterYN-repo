@@ -17,22 +17,46 @@ router.get('/', function(req, res, next) {
 });
 
 
-var resultTweet = []; // shouln't be global, change later, not to niggrid
-var tweetFlag = false;
+var resultTweet = []; // shouln't be global, change later, note to niggrid
+var positive = 0;
+var negative = 0;
+var neutral= 0;
+var posProsent = 0;
+var negProsent = 0;
+var neutralProsent = 0;
+var resultAnalysis = [];
 
 var twitterSearch = function (inputTweet) {
     client.stream('statuses/filter', {track: inputTweet},  function(stream) {
         stream.on('data', function(tweet) {
             var sentimentTweet = sentiment(tweet.text);
             var sentimentScore = sentimentTweet.score;
-            console.log(sentimentScore);
-            resultTweet.push({tweet: tweet.text, analysis: sentimentScore}); /// add result to list
+
+            sentimentAnalysis(sentimentScore);
+            resultTweet.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
         });
         stream.on('error', function(error) {
             console.log(error);
         });
     });
+};
+
+var sentimentAnalysis = function (score) {
+    if(score>0) {
+        positive +=1;
+        posProsent = (positive/resultTweet.length)*100;
+    }
+    if(score<0) {
+        negative +=1;
+        negProsent = (negative/resultTweet.length)*100;
+    }
+    if(score==0){
+        neutral +=1;
+        neutralProsent = (neutral/resultTweet.length)*100;
+    }
+    resultAnalysis.push({positive:posProsent, negative: negProsent, neutral: neutralProsent});
+    console.log(resultAnalysis);
 };
 
 var main = function() {
