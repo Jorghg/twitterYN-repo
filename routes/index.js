@@ -5,10 +5,10 @@ var sentiment = require('sentiment');
 var Twitter = require('twitter');
 
 var client = new Twitter({
-    consumer_key: 'OaNHqnoh4K5mV9Dhte6Xpgbwd',
-    consumer_secret: 'q1UUfta3Ta5RgSead5hwBGaaZex95hpYU5u3LbWoDzmAvdYZoQ',
-    access_token_key: '772612067484282880-S1OHtG3wOr9DTyhcmTsSQNC1iHUpWwj',
-    access_token_secret: 'e5j2RTZhlyz40PsHzROMsNH9kLO9E3FYfE15Ym1unfw3Q'
+    consumer_key: 'XoP0cUhbC3KIzM5lqkkQpn06N',
+    consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
+    access_token_key: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
+    access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
 });
 
 /* GET home page. */
@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
 });
 
 
-var resultTweet = []; // shouln't be global, change later, note to niggrid
+var resultTweets = []; // shouln't be global, change later, note to niggrid
 var positive = 0;
 var negative = 0;
 var neutral= 0;
@@ -31,9 +31,11 @@ var twitterSearch = function (inputTweet) {
         stream.on('data', function(tweet) {
             var sentimentTweet = sentiment(tweet.text);
             var sentimentScore = sentimentTweet.score;
+            var resultTweet = [{tweet: tweet.text, score: sentimentScore}]
 
-            sentimentAnalysis(sentimentScore);
-            resultTweet.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+            resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+
+            sentimentAnalysis(sentimentScore)
 
         });
         stream.on('error', function(error) {
@@ -43,20 +45,23 @@ var twitterSearch = function (inputTweet) {
 };
 
 var sentimentAnalysis = function (score) {
+
     if(score>0) {
         positive +=1;
-        posProsent = (positive/resultTweet.length)*100;
     }
     if(score<0) {
         negative +=1;
-        negProsent = (negative/resultTweet.length)*100;
     }
     if(score==0){
         neutral +=1;
-        neutralProsent = (neutral/resultTweet.length)*100;
     }
+
+    posProsent = (positive/resultTweets.length)*100;
+    negProsent = (negative/resultTweets.length)*100;
+    neutralProsent = (neutral/resultTweets.length)*100;
+
     resultAnalysis.push({positive:posProsent, negative: negProsent, neutral: neutralProsent});
-    console.log(resultAnalysis);
+    console.log(resultAnalysis)
 };
 
 var main = function() {
