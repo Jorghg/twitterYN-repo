@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script async
+            custom-element="amp-twitter"
+            src="https://cdn.ampproject.org/v0/amp-twitter-0.1.js">
+    </script>
 </head>
 <body>
 <h1 id="header"><%= title %></h1>
@@ -15,14 +20,9 @@
         <button id="searchBtn" class="btn btn-success">+</button>
     </form>
 </div>
-<div id="tweets"></div>
+<div id="tweets">
+</div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
-<script>
-    var socket = io.connect('/');
-    tweets = document.getElementById('tweets');
-    socket.on('liveTweet', function (data) {
-        tweets.innerHTML = tweets.innerHTML + '<br>' + data;
-    });
-</script>
+<script type="text/javascript" src="/javascripts/websocket.js"></script>
 </html>

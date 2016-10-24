@@ -36,13 +36,14 @@ module.exports = function (io) {
             stream.on('data', function(tweet) {
                 var sentimentTweet = sentiment(tweet.text);
                 var sentimentScore = sentimentTweet.score;
-                var resultTweet = [{tweet: tweet.text, score: sentimentScore}]
+                var resultTweet = {tweetID:tweet.id_str,tweet: tweet.text, score: sentimentScore}
 
                 resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
-                sentimentAnalysis(sentimentScore)
+                sentimentAnalysis(sentimentScore);
 
-                io.emit('liveTweet',tweet.text);
+                io.emit('liveTweet',resultTweet);
+
 
             });
             stream.on('error', function(error) {
