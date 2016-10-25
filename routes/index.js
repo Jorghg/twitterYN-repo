@@ -29,18 +29,17 @@ module.exports = function (io) {
     var neutralProsent = 0;
     var resultAnalysis = [];
 
-    var twee = io.of('liveTweet');
-
     var twitterSearch = function (inputTweet) {
         client.stream('statuses/filter', {track: inputTweet},  function(stream) {
             stream.on('data', function(tweet) {
                 var sentimentTweet = sentiment(tweet.text);
                 var sentimentScore = sentimentTweet.score;
-                var resultTweet = {tweetID:tweet.id_str,tweet: tweet.text, score: sentimentScore}
 
                 resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
                 sentimentAnalysis(sentimentScore);
+
+                var resultTweet = {tweetID:tweet.id_str, positive:posProsent, neutral:neutralProsent, negative: negProsent};
 
                 io.emit('liveTweet',resultTweet);
 

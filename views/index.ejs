@@ -20,8 +20,17 @@
         <button id="searchBtn" class="btn btn-success">+</button>
     </form>
 </div>
-<div id="tweets">
+<div class="row">
+    <div class="col-md-6" id="feed"><ul id="tweets" class="list-group"></ul></div>
+    <div class="col-md-6" id="stats">
+        <ul>
+            <li id="pos"></li>
+            <li id="neu"></li>
+            <li id="neg"></li>
+        </ul>
+    </div>
 </div>
+
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/javascripts/websocket.js"></script>

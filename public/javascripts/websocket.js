@@ -6,6 +6,10 @@ socket.on('liveTweet', function (data) {
         document.getElementById('tweets'),
         {
             theme: 'light'
-        })
+        });
+
+    pos.innerHTML = Math.round(data.positive);
+    neu.innerHTML = Math.round(data.neutral);
+    neg.innerHTML = Math.round(data.negative);
 });
 
