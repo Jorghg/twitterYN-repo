@@ -3,13 +3,13 @@ module.exports = function (io) {
     var express = require('express');
     var router = express.Router();
     var sentiment = require('sentiment');
-    var Twitter = require('twitter');
+    var Twitter = require('twit');
 
     //twitter cresidentals
     var twit = new Twitter({
         consumer_key: 'XoP0cUhbC3KIzM5lqkkQpn06N',
         consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
-        access_token_key: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
+        access_token: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
         access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
     });
 
@@ -35,20 +35,21 @@ module.exports = function (io) {
     var compareWith = '';
 
 
-
     //define stream
-    var stream = twit.stream('statuses/filter', {track: 'trump,e'});
+    var stream = twit.stream('statuses/filter', {track: 'happy'});
 
     stream.on('tweet',function(tweet) {
-        console.log(tweet.text);
-        var tweetString = tweet.text;
-        if(tweetString.includes('trump')){
-            console.log('ja');
+        var tweetString = 'trump is an asshole';
+        if(tweetString.includes()){
+            toClient(tweet);
+            console.log(tweet.text);
+        } else {
+            console.log('compare with here');
         }
     });
 
     stream.on('error', function(error) {
-        console.log(error.message + 'heihei');
+        console.log('Stream error: ' + error.message);
     });
 
 
