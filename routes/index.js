@@ -36,13 +36,14 @@ module.exports = function (io) {
 
 
     //define stream
-    var stream = twit.stream('statuses/filter', {track: 'happy'});
+    var stream = twit.stream('statuses/filter', {track: 'trump,e'});
 
     stream.on('tweet',function(tweet) {
-        var tweetString = 'trump is an asshole';
-        if(tweetString.includes()){
-            toClient(tweet);
-            console.log(tweet.text);
+        var tweetString = tweet.text;
+        if(compareWith == ""){
+            if(tweetString.includes("trump")){
+                toClient(tweet);
+            }
         } else {
             console.log('compare with here');
         }
