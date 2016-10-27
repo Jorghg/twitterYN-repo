@@ -2,55 +2,70 @@ module.exports = function (io) {
 
     var express = require('express');
     var router = express.Router();
-
     var sentiment = require('sentiment');
     var Twitter = require('twitter');
 
-    var client = new Twitter({
+    //twitter cresidentals
+    var twit = new Twitter({
         consumer_key: 'XoP0cUhbC3KIzM5lqkkQpn06N',
         consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
         access_token_key: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
         access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
     });
 
-    /* GET home page. */
+    //start page
     router.get('/', function(req, res, next) {
         res.render('index', { title: 'Trump, Yey or Ney?' });
     });
 
+    router.get('/compare', function(req, res, next) {
+        compareWith = req.query.with; /// retrieve value of input from client side
+        res.render('index', { title: 'Trump, Yey or Ney?' });
+    });
 
-    //note to self, disse burde endres på
+
+    //global variables...
     var resultTweets = [];
     var positive = 0;
     var negative = 0;
     var neutral= 0;
-    var posProsent = 0;
-    var negProsent = 0;
-    var neutralProsent = 0;
-    var resultAnalysis = [];
-
-    var twitterSearch = function (inputTweet) {
-        client.stream('statuses/filter', {track: inputTweet},  function(stream) {
-            stream.on('data', function(tweet) {
-                var sentimentTweet = sentiment(tweet.text);
-                var sentimentScore = sentimentTweet.score;
-
-                resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
-
-                sentimentAnalysis(sentimentScore);
-
-                var resultTweet = {tweetID:tweet.id_str, positive:posProsent, neutral:neutralProsent, negative: negProsent};
-
-                io.emit('liveTweet',resultTweet);
+    var posPercent = '';
+    var negPercent = '';
+    var neutralPercent = '';
+    var compareWith = '';
 
 
-            });
-            stream.on('error', function(error) {
-                console.log(error);
-            });
-        });
+
+    //define stream
+    var stream = twit.stream('statuses/filter', {track: 'trump,e'});
+
+    stream.on('tweet',function(tweet) {
+        console.log(tweet.text);
+        var tweetString = tweet.text;
+        if(tweetString.includes('trump')){
+            console.log('ja');
+        }
+    });
+
+    stream.on('error', function(error) {
+        console.log(error.message + 'heihei');
+    });
+
+
+    var toClient = function(tweet) {
+        var sentimentTweet = sentiment(tweet.text);
+        var sentimentScore = sentimentTweet.score;
+
+        resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+
+        sentimentAnalysis(sentimentScore);
+
+        var resultTweet = {tweetID:tweet.id_str, positive:posPercent, neutral:neutralPercent, negative: negPercent};
+
+        io.emit('liveTweet',resultTweet);
     };
 
+    //sentiment analysis
     var sentimentAnalysis = function (score) {
 
         if(score>0) {
@@ -63,20 +78,15 @@ module.exports = function (io) {
             neutral +=1;
         }
 
-        posProsent = (positive/resultTweets.length)*100;
-        negProsent = (negative/resultTweets.length)*100;
-        neutralProsent = (neutral/resultTweets.length)*100;
+        // calculate percentages
+        posPercent = (positive/resultTweets.length)*100;
+        negPercent = (negative/resultTweets.length)*100;
+        neutralPercent = (neutral/resultTweets.length)*100;
 
-        resultAnalysis.push({positive:posProsent, negative: negProsent, neutral: neutralProsent});
-        console.log(resultAnalysis)
-    };
-
-    var main = function() {
-        twitterSearch("trump");
+        var resultAnalysis = {positive:posPercent, negative: negPercent, neutral: neutralPercent};
     };
 
 
-    main();
 
     return router;
 };
