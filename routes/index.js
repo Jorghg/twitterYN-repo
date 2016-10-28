@@ -1,3 +1,4 @@
+
 module.exports = function (io) {
 
     var express = require('express');
@@ -26,26 +27,49 @@ module.exports = function (io) {
 
     //global variables...
     var resultTweets = [];
+    var resultTweets2 = [];
     var positive = 0;
     var negative = 0;
     var neutral= 0;
     var posPercent = '';
     var negPercent = '';
     var neutralPercent = '';
+    var positive2 = 0;
+    var negative2 = 0;
+    var neutral2= 0;
+    var posPercent2 = '';
+    var negPercent2 = '';
+    var neutralPercent2 = '';
     var compareWith = '';
+    var resultTweet1 = '';
+    var resultTweet2 = '';
 
 
     //define stream
-    var stream = twit.stream('statuses/filter', {track: 'trump,e'});
+    var stream = twit.stream('statuses/filter', {track: 'trump,a'});
 
     stream.on('tweet',function(tweet) {
         var tweetString = tweet.text;
         if(compareWith == ""){
             if(tweetString.includes("trump")){
-                toClient(tweet);
+                first(tweet);
+                var results = [resultTweet1,resultTweet2];
+                io.emit('liveTweet',results);
             }
         } else {
-            console.log('compare with here');
+            if(tweetString.includes("trump") || tweetString.includes(compareWith)){
+                if(tweetString.includes("trump")){
+                    first(tweet);
+                    console.log("yes");
+                }
+                if(tweetString.includes(compareWith)){
+                    second(tweet);
+                    console.log("no");
+                }
+                var results = [resultTweet1,resultTweet2];
+                io.emit('liveTweet',results);
+            }
+
         }
     });
 
@@ -54,21 +78,30 @@ module.exports = function (io) {
     });
 
 
-    var toClient = function(tweet) {
+    var first = function(tweet) {
         var sentimentTweet = sentiment(tweet.text);
         var sentimentScore = sentimentTweet.score;
 
         resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
-        sentimentAnalysis(sentimentScore);
+        sentimentAnalysis1(sentimentScore);
 
-        var resultTweet = {tweetID:tweet.id_str, positive:posPercent, neutral:neutralPercent, negative: negPercent};
+        resultTweet1 = {tweetID:tweet.id_str, positive:posPercent, neutral:neutralPercent, negative: negPercent};
+    };
 
-        io.emit('liveTweet',resultTweet);
+    var second = function(tweet) {
+        var sentimentTweet = sentiment(tweet.text);
+        var sentimentScore = sentimentTweet.score;
+
+        resultTweets2.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+
+        sentimentAnalysis2(sentimentScore);
+
+        resultTweet2 = {tweetID:tweet.id_str, positive:posPercent2, neutral:neutralPercent2, negative: negPercent2};
     };
 
     //sentiment analysis
-    var sentimentAnalysis = function (score) {
+    var sentimentAnalysis1 = function (score) {
 
         if(score>0) {
             positive +=1;
@@ -86,6 +119,27 @@ module.exports = function (io) {
         neutralPercent = (neutral/resultTweets.length)*100;
 
         var resultAnalysis = {positive:posPercent, negative: negPercent, neutral: neutralPercent};
+    };
+
+    //sentiment analysis
+    var sentimentAnalysis2 = function (score) {
+
+        if(score>0) {
+            positive2 +=1;
+        }
+        if(score<0) {
+            negative2 +=1;
+        }
+        if(score==0){
+            neutral2 +=1;
+        }
+
+        // calculate percentages
+        posPercent2 = (positive2/resultTweets2.length)*100;
+        negPercent2 = (negative2/resultTweets2.length)*100;
+        neutralPercent2 = (neutral2/resultTweets2.length)*100;
+
+        var resultAnalysis = {positive:posPercent2, negative: negPercent2, neutral: neutralPercent2};
     };
 
 

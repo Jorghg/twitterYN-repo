@@ -41,7 +41,7 @@ html, body {
 
 
 
-#tweets {
+#tweets1, #tweets2 {
   max-height: 45em;
   max-width: 41em;
   overflow-y: auto;
