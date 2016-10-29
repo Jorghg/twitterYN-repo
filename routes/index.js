@@ -26,51 +26,49 @@ module.exports = function (io) {
 
 
     //global variables...
-    var resultTweets = [];
-    var resultTweets2 = [];
-    var positive = 0;
-    var negative = 0;
-    var neutral= 0;
-    var posPercent = '';
-    var negPercent = '';
-    var neutralPercent = '';
-    var positive2 = 0;
-    var negative2 = 0;
-    var neutral2= 0;
-    var posPercent2 = '';
-    var negPercent2 = '';
-    var neutralPercent2 = '';
+    var resultTrump = [];
+    var resultSearched = [];
+    var positiveT = 0;
+    var negativeT = 0;
+    var neutralT = 0;
+    var posPercentT = '';
+    var negPercentT = '';
+    var neutralPercentT = '';
+    var positiveS = 0;
+    var negativeS = 0;
+    var neutralS = 0;
+    var posPercentS = '';
+    var negPercentS = '';
+    var neutralPercentS = '';
     var compareWith = '';
-    var resultTweet1 = '';
-    var resultTweet2 = '';
-
+    var resultTweetT = '';
+    var resultTweetS = '';
 
     //define stream
-    var stream = twit.stream('statuses/filter', {track: 'trump,a'});
+    var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,a'});
 
+    //catch tweet
     stream.on('tweet',function(tweet) {
-        var tweetString = tweet.text;
-        if(compareWith == ""){
-            if(tweetString.includes("trump")){
-                first(tweet);
-                var results = [resultTweet1,resultTweet2];
+        var inTweet = tweet.text.toLowerCase();
+        if (compareWith == ''){
+            if (inTweet.includes('trump')){
+                trump(tweet);
+                var results = [resultTweetT,resultTweetS];
                 io.emit('liveTweet',results);
             }
         } else {
-            if(tweetString.includes("trump") || tweetString.includes(compareWith)){
-                if(tweetString.includes("trump")){
-                    first(tweet);
-                    console.log("yes");
-                }
-                if(tweetString.includes(compareWith)){
-                    second(tweet);
-                    console.log("no");
-                }
-                var results = [resultTweet1,resultTweet2];
+            if (inTweet.includes('trump')){
+                trump(tweet);
+                var results = [resultTweetT,resultTweetS];
                 io.emit('liveTweet',results);
             }
-
+            if(inTweet.includes(compareWith)){
+                searched(tweet);
+                var results = [resultTweetT,resultTweetS];
+                io.emit('testTweet',results);
+            }
         }
+
     });
 
     stream.on('error', function(error) {
@@ -78,74 +76,71 @@ module.exports = function (io) {
     });
 
 
-    var first = function(tweet) {
+    var trump = function(tweet) {
         var sentimentTweet = sentiment(tweet.text);
         var sentimentScore = sentimentTweet.score;
 
-        resultTweets.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+        resultTrump.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
-        sentimentAnalysis1(sentimentScore);
+        analysisTrump(sentimentScore);
 
-        resultTweet1 = {tweetID:tweet.id_str, positive:posPercent, neutral:neutralPercent, negative: negPercent};
+        resultTweetT = {tweetID:tweet.id_str, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
     };
 
-    var second = function(tweet) {
+    var searched = function(tweet) {
         var sentimentTweet = sentiment(tweet.text);
         var sentimentScore = sentimentTweet.score;
 
-        resultTweets2.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+        resultSearched.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
 
-        sentimentAnalysis2(sentimentScore);
+        analysisSearched(sentimentScore);
 
-        resultTweet2 = {tweetID:tweet.id_str, positive:posPercent2, neutral:neutralPercent2, negative: negPercent2};
+        resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS};
     };
 
     //sentiment analysis
-    var sentimentAnalysis1 = function (score) {
+    var analysisTrump = function (score) {
 
         if(score>0) {
-            positive +=1;
+            positiveT +=1;
         }
         if(score<0) {
-            negative +=1;
+            negativeT +=1;
         }
         if(score==0){
-            neutral +=1;
+            neutralT +=1;
         }
 
         // calculate percentages
-        posPercent = (positive/resultTweets.length)*100;
-        negPercent = (negative/resultTweets.length)*100;
-        neutralPercent = (neutral/resultTweets.length)*100;
+        posPercentT = (positiveT/resultTrump.length)*100;
+        negPercentT = (negativeT/resultTrump.length)*100;
+        neutralPercentT = (neutralT/resultTrump.length)*100;
 
-        var resultAnalysis = {positive:posPercent, negative: negPercent, neutral: neutralPercent};
+        var resultAnalysis = {positive:posPercentT, negative: negPercentT, neutral: neutralPercentT};
     };
 
     //sentiment analysis
-    var sentimentAnalysis2 = function (score) {
+    var analysisSearched = function (score) {
 
         if(score>0) {
-            positive2 +=1;
+            positiveS +=1;
         }
         if(score<0) {
-            negative2 +=1;
+            negativeS +=1;
         }
         if(score==0){
-            neutral2 +=1;
+            neutralS +=1;
         }
 
         // calculate percentages
-        posPercent2 = (positive2/resultTweets2.length)*100;
-        negPercent2 = (negative2/resultTweets2.length)*100;
-        neutralPercent2 = (neutral2/resultTweets2.length)*100;
+        posPercentS = (positiveS/resultSearched.length)*100;
+        negPercentS = (negativeS/resultSearched.length)*100;
+        neutralPercentS = (neutralS/resultSearched.length)*100;
 
-        var resultAnalysis = {positive:posPercent2, negative: negPercent2, neutral: neutralPercent2};
+        var resultAnalysis = {positive:posPercentS, negative: negPercentS, neutral: neutralPercentS};
     };
 
 
 
     return router;
 };
-
-
-
