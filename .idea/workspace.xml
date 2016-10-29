@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="91a4fa7a-7b14-455d-b5f3-2e099b80e867" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/javascripts/websocket.js" afterPath="$PROJECT_DIR$/public/javascripts/websocket.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes/index.js" afterPath="$PROJECT_DIR$/routes/index.js" />
     </list>
     <ignored path="trump.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -70,7 +68,7 @@
       <file leaf-file-name="index.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/routes/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="434">
+            <state relative-caret-position="1800">
               <caret line="144" column="18" selection-start-line="144" selection-start-column="18" selection-end-line="144" selection-end-column="18" />
               <folding />
             </state>
@@ -337,12 +335,12 @@
       <workItem from="1477624248646" duration="197000" />
       <workItem from="1477624542033" duration="1855000" />
       <workItem from="1477627078484" duration="4061000" />
-      <workItem from="1477710198499" duration="3579000" />
+      <workItem from="1477710198499" duration="4219000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="77083000" />
+    <option name="totallyTimeSpent" value="77723000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-11" y="-11" width="1942" height="1042" extended-state="6" />
@@ -783,7 +781,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/routes/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
+        <state relative-caret-position="1800">
           <caret line="144" column="18" selection-start-line="144" selection-start-column="18" selection-end-line="144" selection-end-column="18" />
           <folding />
         </state>
