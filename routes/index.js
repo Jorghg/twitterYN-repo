@@ -4,6 +4,7 @@ module.exports = function (io) {
     var router = express.Router();
     var sentiment = require('sentiment');
     var Twitter = require('twit');
+    var natural = require('natural');
 
     //twitter cresidentals
     var twit = new Twitter({
@@ -34,6 +35,8 @@ module.exports = function (io) {
         res.render('index', { title: 'Trump, Yey or Ney?' , userId: userId});
     });
 
+
+    var Classifier = '';
 
     //global variables...
     var resultTotal = [];
@@ -67,9 +70,13 @@ module.exports = function (io) {
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,a'});
 
+    natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
+        Classifier = classifier;
+    });
+
     //catch tweet
     stream.on('tweet',function(tweet) {
-        total(tweet.text);
+        total(tweet);
         io.emit('totalTweet',resultTweetTotal);
         var inTweet = tweet.text.toLowerCase();
         if (compareWith == ''){
@@ -99,6 +106,18 @@ module.exports = function (io) {
 
     var total = function(tweet) {
         count += 1;
+        var sentence = '';
+        var tweetText = tweet.text;
+        var stemmer = natural.PorterStemmer;
+        stemmer.attach();
+        var tokenList = tweetText.tokenizeAndStem();
+        for (var i = 0; i < tokenList.length; i++) {
+            sentence += tokenList[i];
+        }
+        var sentValue = Classifier.classify(sentence);
+
+        console.log(sentValue);
+
         var sentimentTweet = sentiment(tweet.text);
         var sentimentScore = sentimentTweet.score;
 
@@ -193,6 +212,7 @@ module.exports = function (io) {
 
         var resultAnalysis = {positive:posPercentS, negative: negPercentS, neutral: neutralPercentS};
     };
+
 
     return router;
 };
