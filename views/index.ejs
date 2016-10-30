@@ -17,7 +17,7 @@
 <div>
     <form action="compare">
         <input type="text" id="with" class="final" name="with" value="Compare with..."></input>
-        <button id="searchBtn" class="btn btn-success">+</button>
+        <button id="searchBtn" class="btn btn-success">Search</button>
     </form>
 </div>
 <div class="row">
@@ -37,6 +37,7 @@
         <ul id="tweets2" class="list-group"></ul>
     </div>
 </div>
+<input type="hidden" id="userId" value="<%-userId%>"/>
 
 </body>
 <script src="/socket.io/socket.io.js"></script>

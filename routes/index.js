@@ -15,11 +15,14 @@ module.exports = function (io) {
 
     //start page
     router.get('/', function(req, res, next) {
-        res.render('index', { title: 'Trump, Yey or Ney?' });
+        console.log('user id render start ' + userId);
+        res.render('index', { title: 'Trump, Yey or Ney?', userId:0 });
     });
 
     router.get('/compare', function(req, res, next) {
         compareWith = req.query.with; /// retrieve value of input from client side
+        userId = Math.floor(Math.random()*1000);
+        console.log('userid compare; ' + userId);
         resultTweetS = '';
         positiveS = 0;
         negativeS = 0;
@@ -28,7 +31,7 @@ module.exports = function (io) {
         negPercentS = '';
         neutralPercentS = '';
         resultSearched = [];
-        res.render('index', { title: 'Trump, Yey or Ney?' });
+        res.render('index', { title: 'Trump, Yey or Ney?' , userId: userId});
     });
 
 
@@ -59,6 +62,7 @@ module.exports = function (io) {
     var resultTweetT = '';
     var resultTweetS = '';
     var count = 0;
+    var userId = 0;
 
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,a'});
@@ -80,7 +84,8 @@ module.exports = function (io) {
             }
             if(inTweet.includes(compareWith)){
                 searched(tweet);
-                io.emit('testTweet',resultTweetS);
+                console.log('user id should be equal to compare ' + resultTweetS.userId);
+                io.emit(userId,resultTweetS);
             }
         }
 
@@ -123,7 +128,7 @@ module.exports = function (io) {
 
         analysisSearched(sentimentScore);
 
-        resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS};
+        resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS, userId: userId};
     };
 
     // percent analysis total
@@ -188,8 +193,6 @@ module.exports = function (io) {
 
         var resultAnalysis = {positive:posPercentS, negative: negPercentS, neutral: neutralPercentS};
     };
-
-
 
     return router;
 };
