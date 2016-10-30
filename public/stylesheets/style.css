@@ -13,20 +13,24 @@ html, body {
   color: dimgrey;
 }
 
+
 #ul {
   list-style-type: none;
 }
 
-#pos {
+#pos1, #pos2 {
   color: green;
+
 }
 
-#neg {
+#neg1, #neg2{
   color: red;
+
 }
 
-#neu {
+#neu1, #neu2 {
   color: blue;
+
 }
 
 #stats {
@@ -35,7 +39,7 @@ html, body {
   font-size: large;
 }
 
-#result_span {
+#with {
   border-style: none;
 }
 
