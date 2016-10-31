@@ -5,6 +5,58 @@ module.exports = function (io) {
     var sentiment = require('sentiment');
     var Twitter = require('twit');
     var natural = require('natural');
+    var AWS = require("aws-sdk");
+
+    AWS.config.update({
+        region: "us-west-2",
+        endpoint: "https://dynamodb.us-west-2.amazonaws.com"
+        });
+
+    var docClient = new AWS.DynamoDB.DocumentClient();
+
+    var tweetContent = "Trump is best president";
+    var tweetRetwtcount = 25000;
+    var table = "tweets";
+    var userIdTest = "6666666666";
+
+    var params = {
+        TableName:table,
+        Item:{
+            "userID": userIdTest,
+            "tweetContains": tweetContent,
+            "info":{
+                "plot": "Nothing happens at all.",
+                "rating": 0
+            }
+        }
+    };
+
+
+
+
+    console.log("Add tweet to da databaaasss");
+    docClient.put(params, function (err, data) {
+        if (err) {
+            console.error("Unable to add item. Error JSON", JSON.stringify(err, null, 2));
+        }  else  {
+            console.log("Added item: ", JSON.stringify(data, null, 2));
+        }
+
+    });
+
+    docClient.get(params, function(err, data) {
+        if (err) {
+            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+        }
+    });
+
+
+
+
+
+
 
     //twitter cresidentals
     var twit = new Twitter({
