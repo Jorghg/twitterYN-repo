@@ -13,50 +13,7 @@ module.exports = function (io) {
         });
 
     var docClient = new AWS.DynamoDB.DocumentClient();
-
-    var tweetContent = "Trump is best president";
-    var tweetRetwtcount = 25000;
-    var table = "tweets";
-    var userIdTest = "6666666666";
-
-    var params = {
-        TableName:table,
-        Item:{
-            "userID": userIdTest,
-            "tweetContains": tweetContent,
-            "info":{
-                "plot": "Nothing happens at all.",
-                "rating": 0
-            }
-        }
-    };
-
-
-
-
-    console.log("Add tweet to da databaaasss");
-    docClient.put(params, function (err, data) {
-        if (err) {
-            console.error("Unable to add item. Error JSON", JSON.stringify(err, null, 2));
-        }  else  {
-            console.log("Added item: ", JSON.stringify(data, null, 2));
-        }
-
-    });
-
-    docClient.get(params, function(err, data) {
-        if (err) {
-            console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
-        } else {
-            console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-        }
-    });
-
-
-
-
-
-
+    var table = "Tweets";
 
     //twitter cresidentals
     var twit = new Twitter({
@@ -168,7 +125,7 @@ module.exports = function (io) {
             for (var i = 0; i < tokenList.length; i++) {
                 sentence += tokenList[i];
             }
-            var sentValue = Classifier.classify(sentence);
+            //var sentValue = Classifier.classify(sentence);
 
             var sentimentTweet = sentiment(tweet.text);
             var sentimentScore = sentimentTweet.score;
@@ -177,8 +134,33 @@ module.exports = function (io) {
 
             analysisTotal(sentimentScore);
 
+            var params = {
+                TableName:table,
+                Item:{
+                    "tweetID": tweet.user.id_str,
+                    "userID": tweet.user.screen_name,
+                    "content":{
+                        "tweetText": tweet.text,
+                        //"posPros": posPercentT,
+                        //"negPros": negPercentS
+                    }
+                }
+            };
+            console.log(tweet.user.id_str, " ", tweet.user.screen_name," ", tweetText, posPercentT, negPercentT);
+
+
+            docClient.put(params, function(err, data) {
+                if (err) {
+                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    console.log("Added item:", JSON.stringify(data, null, 2));
+                }
+            });
+
             resultTweetTotal = {count: count, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
+
         };
+
 
         var trump = function(tweet) {
             var sentimentTweet = sentiment(tweet.text);
