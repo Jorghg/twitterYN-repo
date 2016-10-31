@@ -136,28 +136,6 @@ module.exports = function (io) {
 
             analysisTotal(sentimentScore);
 
-            var params = {
-                TableName:table,
-                Item:{
-                    "tweetID": tweet.user.id_str,
-                    "userID": tweet.user.screen_name,
-                    "content":{
-                        "tweetText": tweet.text,
-                        //"posPros": posPercentT,
-                        //"negPros": negPercentS
-                    }
-                }
-            };
-            console.log(tweet.user.id_str, " ", tweet.user.screen_name," ", tweetText, posPercentT, negPercentT);
-
-
-            docClient.put(params, function(err, data) {
-                if (err) {
-                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-                } else {
-                    console.log("Added item:", JSON.stringify(data, null, 2));
-                }
-            });
 
             resultTweetTotal = {count: count, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
 
@@ -184,6 +162,29 @@ module.exports = function (io) {
             analysisSearched(sentimentScore);
 
             resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS, userId: userId};
+
+            //Parameters for table
+            var params = {
+                TableName:table,
+                Item:{
+                    "tweetID": tweet.user.id_str,
+                    "userID": tweet.user.screen_name,
+                    "content":{
+                        "tweetText": tweet.text,
+                        //"posPros": posPercentT,
+                        //"negPros": negPercentS
+                    }
+                }
+            };
+
+            //Puts all params entries into database
+            docClient.put(params, function(err, data) {
+                if (err) {
+                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    console.log("Added item:", JSON.stringify(data, null, 2));
+                }
+            });
         };
 
         // percent analysis total
