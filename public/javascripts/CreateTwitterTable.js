@@ -11,14 +11,12 @@ AWS.config.update({
 var dynamodb = new AWS.DynamoDB();
 
 var params = {
-    TableName : "Tweets",
+    TableName : "TrumpStats",
     KeySchema: [
-        { AttributeName: "tweetID", KeyType: "HASH"},  //Partition key
-        { AttributeName: "userID", KeyType: "RANGE" }  //Sort key
+        { AttributeName: "timestamp", KeyType: "HASH"}  //Partition key
     ],
     AttributeDefinitions: [
-        { AttributeName: "tweetID", AttributeType: "S" },
-        { AttributeName: "userID", AttributeType: "S" },
+        { AttributeName: "timestamp", AttributeType: "N" }
     ],
     ProvisionedThroughput: {
         ReadCapacityUnits: 10,
