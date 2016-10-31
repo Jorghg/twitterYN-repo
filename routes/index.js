@@ -79,11 +79,13 @@ module.exports = function (io) {
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,a'});
 
+    natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
+        Classifier = classifier;
+    });
+
     io.on('connection', function (socket) {
 
-        natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
-            Classifier = classifier;
-        });
+        stream.start();
 
         //catch tweet
         stream.on('tweet',function(tweet) {
@@ -125,7 +127,7 @@ module.exports = function (io) {
             for (var i = 0; i < tokenList.length; i++) {
                 sentence += tokenList[i];
             }
-            //var sentValue = Classifier.classify(sentence);
+            var sentValue = Classifier.classify(sentence);
 
             var sentimentTweet = sentiment(tweet.text);
             var sentimentScore = sentimentTweet.score;
