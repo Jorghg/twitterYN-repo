@@ -14,25 +14,26 @@ html, body {
   color: dimgrey;
 }
 
+#statusTweet {
+  font-family: Verdana, Arial, sans-serif;
+  color: dimgrey;
+}
 
 #ul {
   list-style-type: none;
 }
 
-#pos1, #pos2 {
+#pos1, #pos2, #pos3 {
   color: green;
 
 }
 
-#neg1, #neg2{
+#neg1, #neg2, #neg3{
   color: red;
 
 }
 
-#neu1, #neu2 {
-  color: blue;
 
-}
 
 #stats {
   font-size: large;
@@ -42,7 +43,7 @@ html, body {
 
 }
 
-#tweets1, #tweets2 {
+#feedTrump, #feedClinton, #feedObama {
   max-height: 45em;
   max-width: 41em;
   overflow-y: auto;

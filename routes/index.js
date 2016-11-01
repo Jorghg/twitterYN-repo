@@ -34,10 +34,30 @@ module.exports = function (io) {
 
     //global variables...
     var socketConnected = 0;
+    var yey = '';
     var userId = 0;
+    var socketId = 0;
+    var resultTrump = 0;
+    var resultClinton = 0;
+    var resultObama = 0;
+    var resultTweetObama = '';
+    var resultTweetTrump = '';
+    var resultTweetClinton = '';
+    var posObama = 0;
+    var negObama = 0;
+    var obamaPosPer = '';
+    var obamaNegPer = '';
+    var posTrump = 0;
+    var negTrump = 0;
+    var trumpPosPer = '';
+    var trumpNegPer = '';
+    var posClinton = 0;
+    var negClinton = 0;
+    var clintonPosPer = '';
+    var clintonNegPer = '';
 
     //define stream
-    var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,bieber,clinton,obama'});
+    var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,clinton,obama'});
 
     natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
         Classifier = classifier;
@@ -45,66 +65,32 @@ module.exports = function (io) {
 
     // on connect
     io.on('connection', function (socket) {
-        // local for each socket
-        var resultTotal = [];
-        var resultTrump = [];
-        var resultSearched = [];
-        var compareWith = '';
-        var resultTweetTotal = ''
-        var resultTweetT = '';
-        var resultTweetS = '';
-        var userId = 0;
 
-        // from database
-        var totalPos = 0;
-        var totalNeg = 0;
-        var totalPosPer = '';
-        var totalNegPer = '';
-        var positiveT = 0;
-        var negativeT = 0;
-        var posPercentT = '';
-        var negPercentT = '';
-        var positiveS = 0;
-        var negativeS = 0;
-        var posPercentS = '';
-        var negPercentS = '';
-        var count = 0;
+        socketId = socket.id;
+
+        if(socketConnected == 0){
+            stream.start();
+            console.log('started');
+        }
 
         socketConnected += 1;
+
         console.log('Sockets connected: ' + socketConnected);
 
-        stream.start();
-
-        //compare
-        router.get('/compare', function(req, res, next) {
-            compareWith = req.query.optradio; /// retrieve value of input from client side
-            userId = Math.floor(Math.random()*1000);
-            console.log(userId);
-            res.render('index', { title: 'Trump, Yey or Ney?',userId: userId });
-
-        });
 
         //catch tweet
         stream.on('tweet',function(tweet) {
-            total(tweet);
-            io.emit('totalTweet',resultTweetTotal);
             var inTweet = tweet.text.toLowerCase();
-            if (compareWith == ''){
-                if (inTweet.includes('trump')){
-                    trump(tweet);
-                    io.emit('trumpTweet',resultTweetT);
-                }
-            } else {
-                if (inTweet.includes('trump')){
-                    trump(tweet);
-                    io.emit('trumpTweet',resultTweetT);
-                }
-                else if(inTweet.includes(compareWith)){
-                    searched(tweet);
-                    console.log(resultTweetS + ' ' + userId);
-                    io.emit(userId,resultTweetS);
-                }
-            }
+            if (inTweet.includes('trump')){
+                trump(tweet);
+                io.emit('trumpTweet',resultTweetTrump);
+            } else if (inTweet.includes('clinton')) {
+                clinton(tweet);
+                io.emit('clintonTweet',resultTweetClinton);
+            } else if (inTweet.includes('obama')){
+                obama(tweet);
+                io.emit('obamaTweet',resultTweetObama);
+            } io.emit('status',yey);
 
         });
 
@@ -113,121 +99,136 @@ module.exports = function (io) {
             console.log('Stream error: ' + error.message);
         });
 
+
         socket.on('disconnect', function () {
             socketConnected -= 1;
-            console.log('Disconnect')
+            console.log('Disconnect');
             console.log('Sockets connected:' + socketConnected);
-            stream.stop();
+            if (socketConnected == 0){
+                stream.stop();
+                console.log('stopped');
+            }
         });
 
-        // Analyse all tweets
-        var total = function(tweet) {
-            count += 1;
-            var sentence = '';
-            var tweetText = tweet.text;
-            var stemmer = natural.PorterStemmer;
-            stemmer.attach();
-            var tokenList = tweetText.tokenizeAndStem();
-            for (var i = 0; i < tokenList.length; i++) {
-                sentence += tokenList[i] + ' ';
-            }
-            var sentValue = Classifier.classify(sentence);
-
-            resultTotal.push({tweet: tweet.text, score: sentValue}); /// add result to list
-
-            analysisTotal(sentValue);
-
-            resultTweetTotal = {count: count, positive:totalPosPer, negative: totalNegPer};
-
-        };
-
-        // analyse trump tweets
-        var trump = function(tweet) {
-            var sentence = '';
-            var tweetText = tweet.text;
-            var stemmer = natural.PorterStemmer;
-            stemmer.attach();
-            var tokenList = tweetText.tokenizeAndStem();
-            for (var i = 0; i < tokenList.length; i++) {
-                sentence += tokenList[i] + ' ';
-            }
-            var sentValue = Classifier.classify(sentence);
-
-            resultTrump.push({tweet: tweet.text, score: sentValue}); /// add result to list
-
-            analysisTrump(sentValue);
-
-            resultTweetT = {tweetID:tweet.id_str, positive:posPercentT, negative: negPercentT};
-        };
-
-        // analyse searched tweets
-        var searched = function(tweet) {
-            var sentence = '';
-            var tweetText = tweet.text;
-            var stemmer = natural.PorterStemmer;
-            stemmer.attach();
-            var tokenList = tweetText.tokenizeAndStem();
-            for (var i = 0; i < tokenList.length; i++) {
-                sentence += tokenList[i] + ' ';
-            }
-            var sentValue = Classifier.classify(sentence);
-
-            resultSearched.push({tweet: tweet.text, score: sentValue}); /// add result to list
-
-            analysisSearched(sentValue);
-
-            resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, negative: negPercentS, userId: userId};
-
-        };
-
-        // percent total
-        var analysisTotal = function (score) {
-
-            if(score==4) {
-                totalPos +=1;
-            }
-            else {
-                totalNeg +=1;
-            }
-
-            // calculate percentages
-            totalPosPer = Math.round((totalPos/resultTotal.length)*100);
-            totalNegPer = Math.round((totalNeg/resultTotal.length)*100);
-
-        };
-
-        // percent trump tweets
-        var analysisTrump = function (score) {
-
-            if(score==4) {
-                positiveT +=1;
-            }
-            else {
-                negativeT +=1;
-            }
-
-            // calculate percentages
-            posPercentT = Math.round((positiveT/resultTrump.length)*100);
-            negPercentT = Math.round((negativeT/resultTrump.length)*100);
-        };
-
-        // percent seached tweets
-        var analysisSearched = function (score) {
-
-            if(score==4) {
-                positiveS +=1;
-            }
-            else {
-                negativeS +=1;
-            }
-
-            // calculate percentages
-            posPercentS = Math.round((positiveS/resultSearched.length)*100);
-            negPercentS = Math.round((negativeS/resultSearched.length)*100);
-
-        };
-
     });
+
+
+    var obama = function(tweet) {
+        var sentence = '';
+        var tweetText = tweet.text;
+        var stemmer = natural.PorterStemmer;
+        stemmer.attach();
+        var tokenList = tweetText.tokenizeAndStem();
+        for (var i = 0; i < tokenList.length; i++) {
+            sentence += tokenList[i] + ' ';
+        }
+        var sentValue = Classifier.classify(sentence);
+
+        resultObama += 1;
+
+        calcObama(sentValue);
+
+        resultTweetObama = {tweetID:tweet.id_str, positive:obamaPosPer, negative: obamaNegPer, count:resultObama};
+
+    };
+
+    // analyse trump tweets
+    var trump = function(tweet) {
+        var sentence = '';
+        var tweetText = tweet.text;
+        var stemmer = natural.PorterStemmer;
+        stemmer.attach();
+        var tokenList = tweetText.tokenizeAndStem();
+        for (var i = 0; i < tokenList.length; i++) {
+            sentence += tokenList[i] + ' ';
+        }
+        var sentValue = Classifier.classify(sentence);
+
+        resultTrump += 1;
+
+        calcTrump(sentValue);
+
+        resultTweetTrump = {tweetID:tweet.id_str, positive:trumpPosPer, negative: trumpNegPer, count: resultTrump};
+    };
+
+    // analyse searched tweets
+    var clinton = function(tweet) {
+        var sentence = '';
+        var tweetText = tweet.text;
+        var stemmer = natural.PorterStemmer;
+        stemmer.attach();
+        var tokenList = tweetText.tokenizeAndStem();
+        for (var i = 0; i < tokenList.length; i++) {
+            sentence += tokenList[i] + ' ';
+        }
+        var sentValue = Classifier.classify(sentence);
+
+        resultClinton += 1;
+
+        calcClinton(sentValue);
+
+        resultTweetClinton = {tweetID:tweet.id_str, positive:clintonPosPer, negative: clintonNegPer, count:resultClinton};
+
+    };
+
+    // percent total
+    var calcObama = function (score) {
+
+        if(score==4) {
+            posObama +=1;
+        }
+        else {
+            negObama +=1;
+        }
+
+        // calculate percentages
+        obamaPosPer = Math.round((posObama/resultObama)*100);
+        obamaNegPer = Math.round((negObama/resultObama)*100);
+
+    };
+
+    // percent trump tweets
+    var calcTrump = function (score) {
+
+        if(score==4) {
+            posTrump +=1;
+        }
+        else {
+            negTrump +=1;
+        }
+
+        // calculate percentages
+        trumpPosPer = Math.round((posTrump/resultTrump)*100);
+        trumpNegPer = Math.round((negTrump/resultTrump)*100);
+    };
+
+    // percent seached tweets
+    var calcClinton = function (score) {
+
+        if(score==4) {
+            posClinton +=1;
+        }
+        else {
+            negClinton +=1;
+        }
+
+        // calculate percentages
+        clintonPosPer = Math.round((posClinton/resultClinton)*100);
+        clintonNegPer = Math.round((negClinton/resultClinton)*100);
+
+    };
+
+    var statusTweet = function () {
+        if(trumpPosPer > clintonPosPer && trumpPosPer > obamaPosPer) {
+            yey = {trump: true, clinton:false, obama:false};
+        } else {
+           if (clintonPosPer > obamaPosPer) {
+               yey = {trump:false, clinton:true, obama:false};
+           } else {
+               yey = {trump:false, clinton:false, obama:true};
+           }
+        }
+    };
 
     
     return router;

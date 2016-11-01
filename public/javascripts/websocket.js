@@ -1,50 +1,59 @@
 $(function () {
     var socket = io.connect('/');
 
-    var $genUser = $('#searchBtn');
-
-    var userId = '';
-
     $(document).ready(function () {
 
-        userId = $('#userId').val();
-        $genUser.click(function () {
-            console.log('userid ' + userId)
-        });
 
     socket.on('trumpTweet', function (data) {
-        console.log(userId);
         twttr.widgets.createTweet(
             data.tweetID,
-            document.getElementById('tweets1'),
+            document.getElementById('feedTrump'),
             {
                 theme: 'light'
             });
-
+        count1.innerHTML = data.count;
         pos1.innerHTML = data.positive;
         neg1.innerHTML = data.negative;
 
 
     });
 
-    socket.on(userId, function (data) {
-        console.log(userId);
+    socket.on('clintonTweet', function (data) {
         twttr.widgets.createTweet(
             data.tweetID,
-            document.getElementById('tweets2'),
+            document.getElementById('feedClinton'),
             {
                 theme: 'light'
             });
-
+        count2.innerHTML = data.count;
         pos2.innerHTML = data.positive;
         neg2.innerHTML = data.negative;
 
 
     });
 
-    socket.on('totalTweet', function (data) {
-        //console.log('Count ' + data.count + ', Pos: ' + data.positive + ' Neg: ' + data.negative);
+    socket.on('obamaTweet', function (data) {
+        twttr.widgets.createTweet(
+            data.tweetID,
+            document.getElementById('feedObama'),
+            {
+                theme: 'light'
+            });
+        count3.innerHTML = data.count;
+        pos3.innerHTML = data.positive;
+        neg3.innerHTML = data.negative;
 
     });
-});
+        socket.on('status', function (data) {
+
+            if (data.trump == true) {
+                statusTweet.innerHTML = "YEY!"
+            } else if (data.clinton == true) {
+                statusTweet.innerHTML = "Ney.. Clinton for the win";
+            } else {
+                statusTweet.innerHTML = "GO OBAMA!";
+            }
+
+        });
+    });
 });
