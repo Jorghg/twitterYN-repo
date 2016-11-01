@@ -10,7 +10,7 @@ module.exports = function (io) {
     AWS.config.update({
         region: "us-west-2",
         endpoint: "https://dynamodb.us-west-2.amazonaws.com"
-        });
+    });
 
     var docClient = new AWS.DynamoDB.DocumentClient();
     var table = "TrumpStats";
@@ -69,6 +69,43 @@ module.exports = function (io) {
     var userId = 0;
     var socketConnected = 0;
 
+
+    var timestamp = ''
+    var resulttrump = '100';
+    var resultclinton = '11'
+    var resultbush = '55'
+    var resultbiber = '12'
+
+
+
+
+    //Parameters for put and query Can be made into two different if we need to.
+    var paramsPut = {
+        TableName:table,
+        Item: {
+            "timestamp": Date.now(),
+            "stats": {
+                "resultTrump": resulttrump,
+                "resultClinton": resultclinton,
+                "resultBush": resultbush,
+                "resultBiber": resultbiber
+            }
+        }
+    };
+    var trumpCount = 0;
+
+    var paramsQuery = {
+        TableName: table,
+        KeyConditionExpression: "#searchNumber = :number",
+        ExpressionAttributeNames: {
+            "#searchNumber": "timestamp"
+        },
+        ExpressionAttributeValues: {
+            ":number": 1477990335014
+        }
+
+    };
+
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,bush,clinton,obama'});
 
@@ -79,9 +116,22 @@ module.exports = function (io) {
     io.on('connection', function (socket) {
 
         // if no sockets are connected
-         if (socketConnected == 0) {
-             console.log('Her må vi sette trump verdier.');
-         }
+        if (socketConnected == 0) {
+            console.log('Her må vi sette trump verdier.');
+
+
+            docClient.query(paramsQuery, function(err, data) {
+                if (err) {
+                    console.error("Unable to query. Error: ", JSON.stringify(err, null, 2));
+                }  else  {
+                    console.log("Query succeeded. ");
+                    data.Items.forEach(function(item) {
+                        console.log("Here we print what ever we put it"," + item.WHATEVER WE WHANT TO PRINT");
+                    });
+                }
+            });
+
+        }
 
         socketConnected += 1;
         console.log('Sockets connected: ' + socketConnected);
@@ -119,9 +169,17 @@ module.exports = function (io) {
 
         socket.on('disconnect', function () {
             socketConnected -= 1;
-            console.log('Disconnect')
+            console.log('Disconnect');
             console.log('Sockets connected:' + socketConnected);
             stream.stop();
+            //put all parameters into db on disconnect
+            docClient.put(paramsPut, function(err, data) {
+                if (err) {
+                    console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
+                }  else  {
+                    console.log("Items added to DB: ", JSON.stringify(data, null, 2));
+                }
+            });
             // If no sockets are connected
             //if (socketConnected == 0){
             //    //Parameters for table
@@ -137,7 +195,7 @@ module.exports = function (io) {
             //        }
             //    };
 
-                //Puts all params entries into database
+            //Puts all params entries into database
             //    docClient.put(params, function(err, data) {
             //        if (err) {
             //            console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
@@ -149,6 +207,10 @@ module.exports = function (io) {
         });
 
     });
+
+
+
+
 
     // Analyse all tweets
     var total = function(tweet) {
@@ -188,6 +250,10 @@ module.exports = function (io) {
         analysisTrump(sentValue);
 
         resultTweetT = {tweetID:tweet.id_str, positive:posPercentT, negative: negPercentT};
+
+        //Increment trumpCount var by one for every analysis.
+        trumpCount +=1;
+        console.log("Trump count test " + trumpCount);
     };
 
     // analyse searched tweets
@@ -256,6 +322,6 @@ module.exports = function (io) {
         negPercentS = Math.round((negativeS/resultSearched.length)*100);
 
     };
-    
+
     return router;
 };
