@@ -70,7 +70,7 @@ module.exports = function (io) {
     var socketConnected = 0;
 
     //define stream
-    var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,bieber,clinton,obama'});
+    var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,bush,clinton,obama'});
 
     natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
         Classifier = classifier;
@@ -84,6 +84,7 @@ module.exports = function (io) {
          }
 
         socketConnected += 1;
+        console.log('Sockets connected: ' + socketConnected);
 
         stream.start();
 

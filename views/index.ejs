@@ -3,8 +3,9 @@
 <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
     <script async
@@ -14,10 +15,20 @@
 </head>
 <body>
 <h1 id="header"><%= title %></h1>
-<div>
-    <form action="compare">
-        <input type="text" id="with" class="final" name="with" value="Compare with..."></input>
-        <button id="searchBtn" class="btn btn-success">Search</button>
+<div class="container">
+    <h3 id="sub">Compare with..</h3>
+    <form action="compare" id="radioButtons">
+        <div class="row">
+            <div class="col-md-1"><div class="radio">
+                <label><input type="radio" name="optradio" id="clinton">Clinton</label>
+            </div></div>
+            <div class="col-md-1"><div class="radio">
+                <label><input type="radio" name="optradio" id="obama">Obama</label>
+            </div></div>
+            <div class="col-md-1"><div class="radio">
+                <label><input type="radio" name="optradio" id="bush">Bush</label>
+            </div></div>
+        </div>
     </form>
 </div>
 <div class="row">
