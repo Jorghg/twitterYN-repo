@@ -6,12 +6,14 @@ $(function () {
     var userId = '';
 
     $(document).ready(function () {
+
         userId = $('#userId').val();
         $genUser.click(function () {
             console.log('userid ' + userId)
         });
 
-    socket.on('liveTweet', function (data) {
+    socket.on('trumpTweet', function (data) {
+        console.log(userId);
         twttr.widgets.createTweet(
             data.tweetID,
             document.getElementById('tweets1'),
@@ -26,7 +28,7 @@ $(function () {
     });
 
     socket.on(userId, function (data) {
-        console.log('userid; ' + userId);
+        console.log(userId);
         twttr.widgets.createTweet(
             data.tweetID,
             document.getElementById('tweets2'),
@@ -41,7 +43,7 @@ $(function () {
     });
 
     socket.on('totalTweet', function (data) {
-        console.log('Count ' + data.count + ', Pos: ' + data.positive + ' Neg: ' + data.negative);
+        //console.log('Count ' + data.count + ', Pos: ' + data.positive + ' Neg: ' + data.negative);
 
     });
 });
