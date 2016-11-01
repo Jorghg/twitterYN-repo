@@ -13,7 +13,7 @@ module.exports = function (io) {
         });
 
     var docClient = new AWS.DynamoDB.DocumentClient();
-    var table = "Tweets";
+    var table = "TrumpStats";
 
     //twitter cresidentals
     var twit = new Twitter({
@@ -29,10 +29,10 @@ module.exports = function (io) {
         res.render('index', { title: 'Trump, Yey or Ney?', userId:0 });
     });
 
+    //compare
     router.get('/compare', function(req, res, next) {
         compareWith = req.query.with; /// retrieve value of input from client side
         userId = Math.floor(Math.random()*1000);
-        console.log('userid compare; ' + userId);
         resultTweetS = '';
         positiveS = 0;
         negativeS = 0;
@@ -44,7 +44,7 @@ module.exports = function (io) {
         res.render('index', { title: 'Trump, Yey or Ney?' , userId: userId});
     });
 
-
+    // classifier
     var Classifier = '';
 
     //global variables...
@@ -53,10 +53,8 @@ module.exports = function (io) {
     var resultSearched = [];
     var totalPos = 0;
     var totalNeg = 0;
-    var totalNeu = 0;
     var totalPosPer = '';
     var totalNegPer = '';
-    var totalNeuPer = '';
     var positiveT = 0;
     var negativeT = 0;
     var neutralT = 0;
@@ -75,6 +73,7 @@ module.exports = function (io) {
     var resultTweetS = '';
     var count = 0;
     var userId = 0;
+    var socketConnected = 0;
 
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,a'});
@@ -84,6 +83,13 @@ module.exports = function (io) {
     });
 
     io.on('connection', function (socket) {
+
+        // if no sockets are connected
+         if (socketConnected == 0) {
+             console.log('Her må vi sette trump verdier.');
+         }
+
+        socketConnected += 1;
 
         stream.start();
 
@@ -104,7 +110,6 @@ module.exports = function (io) {
                 }
                 if(inTweet.includes(compareWith)){
                     searched(tweet);
-                    console.log('user id should be equal to compare ' + resultTweetS.userId);
                     io.emit(userId,resultTweetS);
                 }
             }
@@ -116,146 +121,142 @@ module.exports = function (io) {
             console.log('Stream error: ' + error.message);
         });
 
-
-        var total = function(tweet) {
-            count += 1;
-            var sentence = '';
-            var tweetText = tweet.text;
-            var stemmer = natural.PorterStemmer;
-            stemmer.attach();
-            var tokenList = tweetText.tokenizeAndStem();
-            for (var i = 0; i < tokenList.length; i++) {
-                sentence += tokenList[i];
-            }
-            var sentValue = Classifier.classify(sentence);
-
-            var sentimentTweet = sentiment(tweet.text);
-            var sentimentScore = sentimentTweet.score;
-
-            resultTotal.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
-
-            analysisTotal(sentimentScore);
-
-
-            resultTweetTotal = {count: count, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
-
-        };
-
-
-        var trump = function(tweet) {
-            var sentimentTweet = sentiment(tweet.text);
-            var sentimentScore = sentimentTweet.score;
-
-            resultTrump.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
-
-            analysisTrump(sentimentScore);
-
-            resultTweetT = {tweetID:tweet.id_str, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
-        };
-
-        var searched = function(tweet) {
-            var sentimentTweet = sentiment(tweet.text);
-            var sentimentScore = sentimentTweet.score;
-
-            resultSearched.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
-
-            analysisSearched(sentimentScore);
-
-            resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS, userId: userId};
-
-            //Parameters for table
-            var params = {
-                TableName:table,
-                Item:{
-                    "tweetID": tweet.user.id_str,
-                    "userID": tweet.user.screen_name,
-                    "content":{
-                        "tweetText": tweet.text,
-                        //"posPros": posPercentT,
-                        //"negPros": negPercentS
-                    }
-                }
-            };
-
-            //Puts all params entries into database
-            docClient.put(params, function(err, data) {
-                if (err) {
-                    console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-                } else {
-                    console.log("Added item:", JSON.stringify(data, null, 2));
-                }
-            });
-        };
-
-        // percent analysis total
-        var analysisTotal = function (score) {
-
-            if(score>0) {
-                totalPos +=1;
-            }
-            if(score<0) {
-                totalNeg +=1;
-            }
-            if(score==0){
-                totalNeu +=1;
-            }
-
-            // calculate percentages
-            totalPosPer = Math.round((totalPos/resultTotal.length)*100);
-            totalNeg = Math.round((totalNeg/resultTotal.length)*100);
-            totalNeuPer = Math.round((totalNeu/resultTotal.length)*100);
-
-            var resultAnalysis = {positive:totalPosPer, negative: totalNegPer, neutral: totalNeuPer};
-        };
-
-        // percent analysis
-        var analysisTrump = function (score) {
-
-            if(score>0) {
-                positiveT +=1;
-            }
-            if(score<0) {
-                negativeT +=1;
-            }
-            if(score==0){
-                neutralT +=1;
-            }
-
-            // calculate percentages
-            posPercentT = Math.round((positiveT/resultTrump.length)*100);
-            negPercentT = Math.round((negativeT/resultTrump.length)*100);
-            neutralPercentT = Math.round((neutralT/resultTrump.length)*100);
-
-            var resultAnalysis = {positive:posPercentT, negative: negPercentT, neutral: neutralPercentT};
-        };
-
-        //sentiment analysis
-        var analysisSearched = function (score) {
-
-            if(score>0) {
-                positiveS +=1;
-            }
-            if(score<0) {
-                negativeS +=1;
-            }
-            if(score==0){
-                neutralS +=1;
-            }
-
-            // calculate percentages
-            posPercentS = Math.round((positiveS/resultSearched.length)*100);
-            negPercentS = Math.round((negativeS/resultSearched.length)*100);
-            neutralPercentS = Math.round((neutralS/resultSearched.length)*100);
-
-            var resultAnalysis = {positive:posPercentS, negative: negPercentS, neutral: neutralPercentS};
-        };
-
         socket.on('disconnect', function () {
             console.log('disconnect');
+            socketConnected -= 1;
+            // If no sockets are connected
+            if (socketConnected == 0){
+                //Parameters for table
+                var params = {
+                    TableName:table,
+                    Item:{
+                        "timestamp": Date.now(),
+                        "content":{
+                            "Positive": posPercentT,
+                            "Neutral": neutralPercentT,
+                            "Negative": negPercentT
+                        }
+                    }
+                };
+
+                //Puts all params entries into database
+                docClient.put(params, function(err, data) {
+                    if (err) {
+                        console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                    } else {
+                        console.log("Added item:", JSON.stringify(data, null, 2));
+                    }
+                });
+            }
             stream.stop();
         });
 
     });
+
+    // Analyse all tweets
+    var total = function(tweet) {
+        count += 1;
+        var sentence = '';
+        var tweetText = tweet.text;
+        var stemmer = natural.PorterStemmer;
+        stemmer.attach();
+        var tokenList = tweetText.tokenizeAndStem();
+        for (var i = 0; i < tokenList.length; i++) {
+            sentence += tokenList[i] + ' ';
+        }
+        var sentValue = Classifier.classify(sentence);
+
+        resultTotal.push({tweet: tweet.text, score: sentValue}); /// add result to list
+
+        analysisTotal(sentValue);
+
+        resultTweetTotal = {count: count, positive:totalPosPer, negative: totalNegPer};
+
+    };
+
+    // analyse trump tweets
+    var trump = function(tweet) {
+        var sentimentTweet = sentiment(tweet.text);
+        var sentimentScore = sentimentTweet.score;
+
+        resultTrump.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+
+        analysisTrump(sentimentScore);
+
+        resultTweetT = {tweetID:tweet.id_str, positive:posPercentT, neutral:neutralPercentT, negative: negPercentT};
+    };
+
+    // analyse searched tweets
+    var searched = function(tweet) {
+        var sentimentTweet = sentiment(tweet.text);
+        var sentimentScore = sentimentTweet.score;
+
+        resultSearched.push({tweet: tweet.text, score: sentimentScore}); /// add result to list
+
+        analysisSearched(sentimentScore);
+
+        resultTweetS = {tweetID:tweet.id_str, positive:posPercentS, neutral:neutralPercentS, negative: negPercentS, userId: userId};
+
+    };
+
+    // percent total
+    var analysisTotal = function (score) {
+
+        if(score==4) {
+            totalPos +=1;
+        }
+        if(score==0) {
+            totalNeg +=1;
+        }
+
+
+        // calculate percentages
+        totalPosPer = Math.round((totalPos/resultTotal.length)*100);
+        totalNegPer = Math.round((totalNeg/resultTotal.length)*100);
+        
+    };
+
+    // percent trump tweets
+    var analysisTrump = function (score) {
+
+        if(score>0) {
+            positiveT +=1;
+        }
+        if(score<0) {
+            negativeT +=1;
+        }
+        if(score==0){
+            neutralT +=1;
+        }
+
+        // calculate percentages
+        posPercentT = Math.round((positiveT/resultTrump.length)*100);
+        negPercentT = Math.round((negativeT/resultTrump.length)*100);
+        neutralPercentT = Math.round((neutralT/resultTrump.length)*100);
+
+        var resultAnalysis = {positive:posPercentT, negative: negPercentT, neutral: neutralPercentT};
+    };
+
+    // percent seached tweets
+    var analysisSearched = function (score) {
+
+        if(score>0) {
+            positiveS +=1;
+        }
+        if(score<0) {
+            negativeS +=1;
+        }
+        if(score==0){
+            neutralS +=1;
+        }
+
+        // calculate percentages
+        posPercentS = Math.round((positiveS/resultSearched.length)*100);
+        negPercentS = Math.round((negativeS/resultSearched.length)*100);
+        neutralPercentS = Math.round((neutralS/resultSearched.length)*100);
+
+        var resultAnalysis = {positive:posPercentS, negative: negPercentS, neutral: neutralPercentS};
+    };
     
     return router;
 };
