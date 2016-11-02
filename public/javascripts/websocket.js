@@ -50,7 +50,7 @@ $(function () {
                 statusTweet.innerHTML = "YEY!"
             } else if (data.clinton == true) {
                 statusTweet.innerHTML = "Ney.. Clinton for the win";
-            } else {
+            } else if (data.obama == true){
                 statusTweet.innerHTML = "GO OBAMA!";
             }
 

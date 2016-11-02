@@ -56,6 +56,33 @@ module.exports = function (io) {
     var clintonPosPer = '';
     var clintonNegPer = '';
 
+    var timestamp = '';
+
+    //Parameters for put and query Can be made into two different if we need to.
+    var paramsPut = {
+        TableName:table,
+        Item: {
+            "timestamp": Date.now(),
+            "stats": {
+                "resultTrump": resultTrump,
+                "resultClinton": resultClinton,
+                "resultObama": resultObama
+            }
+        }
+    };
+
+    var paramsQuery = {
+        TableName: table,
+        KeyConditionExpression: "#searchNumber = :number",
+        ExpressionAttributeNames: {
+            "#searchNumber": "timestamp"
+        },
+        ExpressionAttributeValues: {
+            ":number": 1477990335014
+        }
+
+    };
+
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,clinton,obama'});
 
@@ -69,6 +96,16 @@ module.exports = function (io) {
         socketId = socket.id;
 
         if(socketConnected == 0){
+            docClient.query(paramsQuery, function(err, data) {
+                if (err) {
+                    console.error("Unable to query. Error: ", JSON.stringify(err, null, 2));
+                }  else  {
+                    console.log("Query succeeded. ");
+                    data.Items.forEach(function(item) {
+                        console.log("Here we print what ever we put it"," + item.WHATEVER WE WHANT TO PRINT");
+                    });
+                }
+            });
             stream.start();
             console.log('started');
         }
@@ -90,7 +127,9 @@ module.exports = function (io) {
             } else if (inTweet.includes('obama')){
                 obama(tweet);
                 io.emit('obamaTweet',resultTweetObama);
-            } io.emit('status',yey);
+            }
+            statusTweet();
+            io.emit('status',yey);
 
         });
 
@@ -107,6 +146,13 @@ module.exports = function (io) {
             if (socketConnected == 0){
                 stream.stop();
                 console.log('stopped');
+                docClient.put(paramsPut, function(err, data) {
+                    if (err) {
+                        console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
+                    }  else  {
+                        console.log("Items added to DB: ", JSON.stringify(data, null, 2));
+                    }
+                });
             }
         });
 
