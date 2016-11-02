@@ -23,25 +23,28 @@ html, body {
   list-style-type: none;
 }
 
-#pos1, #pos2, #pos3 {
+#pos {
   color: green;
 
 }
 
-#neg1, #neg2, #neg3{
+#neg{
   color: red;
 
 }
 
-
+#count {
+    font-family: Verdana, Arial, sans-serif;
+    color: dimgrey;
+    font-size: small;
+}
 
 #stats {
-  font-size: large;
+    font-size: large;
+    font-family: Verdana, Arial, sans-serif;
 }
 
-#radioButtons {
 
-}
 
 #feedTrump, #feedClinton, #feedObama {
   max-height: 45em;
