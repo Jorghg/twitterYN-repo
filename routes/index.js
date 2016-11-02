@@ -2,7 +2,6 @@ module.exports = function (io) {
 
     var express = require('express');
     var router = express.Router();
-    var sentiment = require('sentiment');
     var Twitter = require('twit');
     var natural = require('natural');
     var AWS = require("aws-sdk");
@@ -58,7 +57,7 @@ module.exports = function (io) {
     var clintonNegPer = '';
 
     // HUSK!!!!
-    var dbID = 9;
+    var dbID = 0;
     var ready = false;
 
     //define stream
@@ -87,6 +86,7 @@ module.exports = function (io) {
                 }
 
             };
+
             docClient.query(paramsQuery, function(err, data) {
                 if (err) {
                     console.error("Unable to query. Error: ", JSON.stringify(err, null, 2));
@@ -106,7 +106,7 @@ module.exports = function (io) {
                         resultObama = item.stats.countObama;
                         negObama = resultObama - posObama;
                         ready = true;
-                        console.log('goodshit');
+                        console.log('Query Worked ! Goodshit');
 
                     });
                 }
@@ -147,6 +147,9 @@ module.exports = function (io) {
                         }
                     }
                 };
+                require('dns').lookup(require('os').hostname(), function (err, add, fam) {
+                    console.log('addr: '+add);
+                })
                 docClient.put(paramsPut, function(err, data) {
                     if (err) {
                         console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
