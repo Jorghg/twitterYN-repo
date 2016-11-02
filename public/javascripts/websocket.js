@@ -49,9 +49,13 @@ $(function () {
             if (data.trump == true) {
                 statusTweet.innerHTML = "YEY!"
             } else if (data.clinton == true) {
-                statusTweet.innerHTML = "Ney.. Clinton for the win";
+                statusTweet.innerHTML = "Ney.. Clinton for the win!";
             } else if (data.obama == true){
                 statusTweet.innerHTML = "GO OBAMA!";
+            } else if (data.tc == true){
+                statusTweet.innerHTML = "NEY.. At least he's more yey than Clinton";
+            } else if (data.to == true){
+                statusTweet.innerHTML = "NEY.. Beats Obama tho";
             }
 
         });
