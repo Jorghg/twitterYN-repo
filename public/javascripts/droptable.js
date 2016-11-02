@@ -11,7 +11,7 @@ AWS.config.update({
 var dynamodb = new AWS.DynamoDB();
 
 var params = {
-    TableName : "Tweets"
+    TableName : "TrumpStats"
 };
 
 dynamodb.deleteTable(params, function(err, data) {
@@ -21,3 +21,4 @@ dynamodb.deleteTable(params, function(err, data) {
         console.log("Deleted table. Table description JSON:", JSON.stringify(data, null, 2));
     }
 });
+
