@@ -28,7 +28,6 @@ module.exports = function (io) {
         res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
     });
 
-
     // classifier for sentiment
     var Classifier = '';
 
@@ -121,7 +120,6 @@ module.exports = function (io) {
             console.log('Sockets connected:' + socketConnected);
             // if no sockets are connected, put into db
             if (socketConnected == 0){
-                ready = false;
                 stream.stop();
                 console.log('stopped');
                 var params = {
