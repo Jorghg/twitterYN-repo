@@ -6,7 +6,6 @@ html, body {
 
 
 #header {
-  padding-top: 2%;
   text-align: center;
   font-size: 40px;
   font-weight: 300;
@@ -24,6 +23,7 @@ html, body {
     font-family: Verdana, Arial, sans-serif;
     color: dimgrey;
     font-size: x-large;
+    font-style: bold;
 }
 
 #check {

@@ -68,8 +68,46 @@ module.exports = function (io) {
 
         socketId = socket.id;
 
-        // if no sockets is connected, load from db and start stream
-        if(socketConnected == 0){
+        var paramsQuery = {
+            TableName: table,
+            KeyConditionExpression: "#searchNumber = :number",
+            ExpressionAttributeNames: {
+                "#searchNumber": "ID"
+            },
+            ExpressionAttributeValues: {
+                ":number": 1
+            }
+
+        };
+
+        docClient.query(paramsQuery, function(err, data) {
+            if (err) {
+                console.error("Unable to query. Error: ", JSON.stringify(err, null, 2));
+            }  else  {
+                console.log("Query succeeded. ");
+
+                data.Items.forEach(function(item) {
+                    posTrump = item.posTrump;
+                    resultTrump = item.countTrump;
+                    negTrump = resultTrump - posTrump;
+
+                    posClinton = item.posClinton;
+                    resultClinton = item.countClinton;
+                    negClinton = resultClinton - posClinton;
+
+                    posObama = item.posObama;
+                    resultObama = item.countObama;
+                    negObama = resultObama - posObama;
+                });
+
+                console.log(data);
+            }
+        });
+        stream.start();
+
+        router.get('/start', function(req, res, next) {
+            res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
+
             var paramsQuery = {
                 TableName: table,
                 KeyConditionExpression: "#searchNumber = :number",
@@ -107,7 +145,42 @@ module.exports = function (io) {
             });
             stream.start();
 
-        }
+        });
+
+        router.get('/stop', function(req, res, next) {
+            res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
+
+            stream.stop();
+            console.log('stopped');
+            var params = {
+                TableName:table,
+                Key:{
+                    "ID": 1
+                },
+                UpdateExpression: "set posTrump=:pT, posClinton=:pC, posObama=:pO, countTrump=:cT, countClinton=:cC, countObama=:cO",
+                ExpressionAttributeValues:{
+                    ":pT":posTrump,
+                    ":pC":posClinton,
+                    ":pO":posObama,
+                    ":cT":resultTrump,
+                    ":cC":resultClinton,
+                    ":cO":resultObama
+                },
+                ReturnValues:"UPDATED_NEW"
+            };
+
+
+            console.log("Updating the item...");
+            docClient.update(params, function(err, data) {
+                if (err) {
+                    console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
+                }  else  {
+                    console.log("Database updated with items: ", data);
+                }
+            });
+        });
+
+
 
         socketConnected += 1;
 
