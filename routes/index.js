@@ -56,10 +56,6 @@ module.exports = function (io) {
     var clintonPosPer = '';
     var clintonNegPer = '';
 
-    // HUSK!!!!
-    var dbID = 0;
-    var ready = false;
-
     //define stream
     var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,clinton,obama'});
 
@@ -82,7 +78,7 @@ module.exports = function (io) {
                     "#searchNumber": "ID"
                 },
                 ExpressionAttributeValues: {
-                    ":number": dbID
+                    ":number": 1
                 }
 
             };
@@ -94,27 +90,23 @@ module.exports = function (io) {
                     console.log("Query succeeded. ");
 
                     data.Items.forEach(function(item) {
-                        posTrump = item.stats.posTrump;
-                        resultTrump = item.stats.countTrump;
+                        posTrump = item.posTrump;
+                        resultTrump = item.countTrump;
                         negTrump = resultTrump - posTrump;
 
-                        posClinton = item.stats.posClinton;
-                        resultClinton = item.stats.countClinton;
+                        posClinton = item.posClinton;
+                        resultClinton = item.countClinton;
                         negClinton = resultClinton - posClinton;
 
-                        posObama = item.stats.posObama;
-                        resultObama = item.stats.countObama;
+                        posObama = item.posObama;
+                        resultObama = item.countObama;
                         negObama = resultObama - posObama;
-                        ready = true;
-                        console.log('Query Worked ! Goodshit');
-
                     });
+
+                    console.log(data);
                 }
             });
-            if (ready == true) {
-                stream.start();
-                console.log('started');
-            }
+            stream.start();
 
         }
 
@@ -127,36 +119,42 @@ module.exports = function (io) {
             socketConnected -= 1;
             console.log('Disconnect');
             console.log('Sockets connected:' + socketConnected);
-            dbID += 1;
             // if no sockets are connected, put into db
             if (socketConnected == 0){
                 ready = false;
                 stream.stop();
                 console.log('stopped');
-                var paramsPut = {
+                var params = {
                     TableName:table,
-                    Item: {
-                        "ID": dbID,
-                        "stats": {
-                            "posTrump": posTrump,
-                            "posClinton": posClinton,
-                            "posObama": posObama,
-                            "countTrump": resultTrump,
-                            "countClinton": resultClinton,
-                            "countObama": resultObama
-                        }
-                    }
+                    Key:{
+                        "ID": 1
+                    },
+                    UpdateExpression: "set posTrump=:pT, posClinton=:pC, posObama=:pO, countTrump=:cT, countClinton=:cC, countObama=:cO",
+                    ExpressionAttributeValues:{
+                        ":pT":posTrump,
+                        ":pC":posClinton,
+                        ":pO":posObama,
+                        ":cT":resultTrump,
+                        ":cC":resultClinton,
+                        ":cO":resultObama
+                    },
+                    ReturnValues:"UPDATED_NEW"
                 };
-                require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-                    console.log('addr: '+add);
-                })
-                docClient.put(paramsPut, function(err, data) {
+
+
+                console.log("Updating the item...");
+                docClient.update(params, function(err, data) {
                     if (err) {
                         console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
                     }  else  {
-                        console.log("Items added to DB: ", data);
+                        console.log("Database updated with items: ", data);
                     }
                 });
+
+                // require('dns').lookup(require('os').hostname(), function (err, add, fam) {
+                //     console.log('addr: '+add);
+                // });
+
             }
         });
 
@@ -205,7 +203,7 @@ module.exports = function (io) {
         calcObama(sentValue); // call calculate function
 
         // set result
-        resultTweetObama = {tweetID:tweet.id_str, positive:obamaPosPer, negative: obamaNegPer, count:resultObama};
+        resultTweetObama = {tweetID:tweet.id_str, tweet:tweet.text, positive:obamaPosPer, negative: obamaNegPer, count:resultObama};
 
     };
 
@@ -226,7 +224,7 @@ module.exports = function (io) {
         calcTrump(sentValue); // calculate function on sentiment value
 
         // set result
-        resultTweetTrump = {tweetID:tweet.id_str, positive:trumpPosPer, negative: trumpNegPer, count: resultTrump};
+        resultTweetTrump = {tweetID:tweet.id_str, tweet:tweet.text, positive:trumpPosPer, negative: trumpNegPer, count: resultTrump};
     };
 
     // analyse clinton tweets
@@ -245,7 +243,7 @@ module.exports = function (io) {
 
         calcClinton(sentValue);
 
-        resultTweetClinton = {tweetID:tweet.id_str, positive:clintonPosPer, negative: clintonNegPer, count:resultClinton};
+        resultTweetClinton = {tweetID:tweet.id_str, tweet:tweet.text, positive:clintonPosPer, negative: clintonNegPer, count:resultClinton};
 
     };
 

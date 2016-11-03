@@ -2,15 +2,16 @@ $(function () {
     var socket = io.connect('/');
 
     $(document).ready(function () {
-
+        var trumpTweetList = [];
+        var clintonTweetList = [];
+        var obamaTweetList = [];
 
     socket.on('trumpTweet', function (data) {
-        twttr.widgets.createTweet(
-            data.tweetID,
-            document.getElementById('feedTrump'),
-            {
-                theme: 'light'
-            });
+        if(trumpTweetList.length > 10){
+            trumpTweetList.shift();
+        }
+        trumpTweetList.push(data.tweet);
+        feedTrump.innerHTML = '<p id="tweet">' + trumpTweetList[trumpTweetList.length -1] + '</p></br>' + feedTrump.innerHTML;
         count1.innerHTML = data.count;
         pos1.innerHTML = data.positive;
         neg1.innerHTML = data.negative;

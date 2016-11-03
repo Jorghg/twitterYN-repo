@@ -9,7 +9,7 @@ AWS.config.update({
 });
 
 var dynamodb = new AWS.DynamoDB();
-
+//
 // var params = {
 //     TableName : "TrumpStats",
 //     KeySchema: [
@@ -39,15 +39,13 @@ var table = "TrumpStats";
 var paramsPut = {
     TableName:table,
     Item: {
-        "ID": 0,
-        "stats": {
-            "posTrump": 0,
-            "posClinton": 0,
-            "posObama": 0,
-            "countTrump": 0,
-            "countClinton": 0,
-            "countObama": 0
-        }
+        "ID": 1,
+        "posTrump": 0,
+        "posClinton": 0,
+        "posObama": 0,
+        "countTrump": 0,
+        "countClinton": 0,
+        "countObama": 0
     }
 };
 
