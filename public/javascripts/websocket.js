@@ -2,16 +2,15 @@ $(function () {
     var socket = io.connect('/');
 
     $(document).ready(function () {
-        var trumpTweetList = [];
-        var clintonTweetList = [];
-        var obamaTweetList = [];
+
 
     socket.on('trumpTweet', function (data) {
-        if(trumpTweetList.length > 10){
-            trumpTweetList.shift();
+        if ( $('#feedTrump li').length > 10 ){
+            $('#feedTrump li').last().remove();
         }
-        trumpTweetList.push(data.tweet);
-        feedTrump.innerHTML = '<p id="tweet">' + trumpTweetList[trumpTweetList.length -1] + '</p></br>' + feedTrump.innerHTML;
+
+        $("#feedTrump").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+
         count1.innerHTML = data.count;
         pos1.innerHTML = data.positive;
         neg1.innerHTML = data.negative;
@@ -20,12 +19,11 @@ $(function () {
     });
 
     socket.on('clintonTweet', function (data) {
-        twttr.widgets.createTweet(
-            data.tweetID,
-            document.getElementById('feedClinton'),
-            {
-                theme: 'light'
-            });
+        $("#feedClinton").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+
+        if ( $('#feedClinton li').length > 10 ){
+            $('#feedClinton li:last-child').remove();
+        }
         count2.innerHTML = data.count;
         pos2.innerHTML = data.positive;
         neg2.innerHTML = data.negative;
@@ -34,12 +32,11 @@ $(function () {
     });
 
     socket.on('obamaTweet', function (data) {
-        twttr.widgets.createTweet(
-            data.tweetID,
-            document.getElementById('feedObama'),
-            {
-                theme: 'light'
-            });
+        $("#feedObama").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+
+        if ( $('#feedObama li').length > 10 ){
+            $('#feedObama li:last-child').remove();
+        }
         count3.innerHTML = data.count;
         pos3.innerHTML = data.positive;
         neg3.innerHTML = data.negative;
