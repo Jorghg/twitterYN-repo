@@ -164,6 +164,7 @@ module.exports = function (io) {
     //catch tweet
     stream.on('tweet',function(tweet) {
         var inTweet = tweet.text.toLowerCase();
+        console.log(inTweet);
         if (inTweet.includes('trump')){
             trump(tweet);
             io.emit('trumpTweet',resultTweetTrump);

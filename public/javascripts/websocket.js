@@ -5,11 +5,13 @@ $(function () {
 
 
     socket.on('trumpTweet', function (data) {
-        if ( $('#feedTrump li').length > 10 ){
-            $('#feedTrump li').last().remove();
+        console.log($('#feedTrump li').length);
+        if ( $('#feedTrump li').length > 150 ){
+
+            $('#feedTrump li:last').remove();
         }
 
-        $("#feedTrump").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+        $("#feedTrump").prepend('<li class="tweet">' + data.tweet + '</li></br>');
 
         count1.innerHTML = data.count;
         pos1.innerHTML = data.positive;
@@ -19,10 +21,10 @@ $(function () {
     });
 
     socket.on('clintonTweet', function (data) {
-        $("#feedClinton").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+        $("#feedClinton").prepend('<li class="tweet">' + data.tweet + '</li></br>');
 
-        if ( $('#feedClinton li').length > 10 ){
-            $('#feedClinton li:last-child').remove();
+        if ( $('#feedClinton li').length > 150 ){
+            $('#feedClinton li:last').remove();
         }
         count2.innerHTML = data.count;
         pos2.innerHTML = data.positive;
@@ -32,10 +34,10 @@ $(function () {
     });
 
     socket.on('obamaTweet', function (data) {
-        $("#feedObama").prepend('<li id="tweet">' + data.tweet + '</li></br>');
+        $("#feedObama").prepend('<li class="tweet">' + data.tweet + '</li></br>');
 
-        if ( $('#feedObama li').length > 10 ){
-            $('#feedObama li:last-child').remove();
+        if ( $('#feedObama li').length > 150 ){
+            $('#feedObama li:last').remove();
         }
         count3.innerHTML = data.count;
         pos3.innerHTML = data.positive;

@@ -67,7 +67,7 @@ html, body {
   text-align: center;
 }
 
-#tweet {
+.tweet {
   height: auto;
   border-radius: 5px;
   border-style: none;
