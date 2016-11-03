@@ -4,14 +4,67 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var aws = require('aws-sdk');
+var Twitter = require('twit');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
 
 app.io = require('socket.io')();
 
+// Instantiate SQS.
+var sqs = new aws.SQS({"accessKeyId":"AKIAID4S7EMMHOAWRRTA", "secretAccessKey": "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", "region": "us-west-2"});
+
+//twitter cresidentals
+var twit = new Twitter({
+  consumer_key: 'XoP0cUhbC3KIzM5lqkkQpn06N',
+  consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
+  access_token: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
+  access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
+});
+
+app.get('/receive', function (req, res) {
+  var params = {
+    QueueUrl: "https://sqs.us-west-2.amazonaws.com/643927985634/Tweets010",
+    MaxNumberOfMessages: 10
+  };
+
+  sqs.receiveMessage(params, function(err, data) {
+    if(err) {
+      res.send(err);
+    }
+    else {
+      res.send(data);
+    }
+  });
+});
+
+//define stream
+var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,clinton,obama'});
+
+//catch tweet
+stream.on('tweet',function(tweet) {
+  send(tweet);
+});
+
+// catch error
+stream.on('error', function(error) {
+  console.log('Stream error: ' + error.message);
+});
+
+
+function send(tweet) {
+  var params = {
+    MessageBody: JSON.stringify(tweet),
+    QueueUrl: "https://sqs.us-west-2.amazonaws.com/643927985634/Tweets010"
+  };
+  sqs.sendMessage(params, function(err, data) {
+    if (err){
+      console.log(err.message);
+    }
+  });
+}
 
 
 // view engine setup
@@ -27,7 +80,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes(app.io));
-app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -59,6 +111,8 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
+
+
 
 
 module.exports = app;
