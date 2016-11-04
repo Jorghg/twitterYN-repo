@@ -6,7 +6,7 @@ module.exports = function (io) {
     var Twitter = require('twit');
     var natural = require('natural');
     var AWS = require("aws-sdk");
-    var sqs = new AWS.SQS({"accessKeyId":"AKIAIOM7TAAXGN4HKWHA", "secretAccessKey": "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", "region": "us-west-2"});
+    var sqs = new AWS.SQS({});
 
 
     AWS.config.update({
@@ -50,7 +50,7 @@ module.exports = function (io) {
     var negClinton = 0;
     var clintonPosPer = '';
     var clintonNegPer = '';
-    var run = '';
+    var ready = 'true';
 
 
     // load classifier
@@ -63,6 +63,7 @@ module.exports = function (io) {
 
         socketId = socket.id;
         socketConnected.push(socketId);
+        ready = 'true';
         console.log('Sockets connected: ' + socketConnected.length);
 
         // load stats from db
@@ -105,12 +106,15 @@ module.exports = function (io) {
         //buffer stream
         router.post('/', function(req, res, next) {
             res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
-            console.log('body: ' + JSON.stringify(req.body));
+            console.log('body: ' + JSON.stringify(req.body.status));
+            ready = req.body.status;
         });
 
         // Calls recieve function in interval
         setInterval(function () {
-            recieve();
+            if(ready == 'true'){
+                recieve();
+            }
         },200);
 
         socket.on('disconnect', function () {
@@ -159,21 +163,23 @@ module.exports = function (io) {
             MaxNumberOfMessages: 1
         };
         sqs.receiveMessage(params, function(err, data) {
-            var tweetObject = JSON.parse(data.Messages[0].Body);
-            var inTweet = tweetObject.text.toLowerCase();
-            if (inTweet.includes('trump')){
-                trump(tweetObject);
-                io.emit('trumpTweet',resultTweetTrump);
-            } else if (inTweet.includes('clinton')) {
-                clinton(tweetObject);
-                io.emit('clintonTweet',resultTweetClinton);
-            } else if (inTweet.includes('obama')){
-                obama(tweetObject);
-                io.emit('obamaTweet',resultTweetObama);
+            if (data.Messages[0].Body != null){
+                var tweetObject = JSON.parse(data.Messages[0].Body);
+                var inTweet = tweetObject.text.toLowerCase();
+                if (inTweet.includes('trump')){
+                    trump(tweetObject);
+                    io.emit('trumpTweet',resultTweetTrump);
+                } else if (inTweet.includes('clinton')) {
+                    clinton(tweetObject);
+                    io.emit('clintonTweet',resultTweetClinton);
+                } else if (inTweet.includes('obama')){
+                    obama(tweetObject);
+                    io.emit('obamaTweet',resultTweetObama);
+                }
+                statusTweet();
+                io.emit('status',yey);
+                deleteTweet(data);
             }
-            statusTweet();
-            io.emit('status',yey);
-            deleteTweet(data);
         });
     };
 

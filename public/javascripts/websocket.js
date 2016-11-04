@@ -15,18 +15,23 @@ $(function () {
             } else {
                 stream=false;
             }
-            $.ajax({
-                type: 'POST',
-                data: stream,
-                contentType: 'application/json',
-                url: '/',
-                success: function() {
-                    console.log(stream);
-                },
-                error: function(error) {
-                    console.log(error);
-                }
+            var params = {status: stream};
+            $.post('/',params,function (data) {
+
             });
+
+            // $.ajax({
+            //     type: 'POST',
+            //     data: stream,
+            //     contentType: 'application/json',
+            //     url: '/',
+            //     success: function() {
+            //         console.log(stream);
+            //     },
+            //     error: function(error) {
+            //         console.log(error);
+            //     }
+            // });
         });
 
 

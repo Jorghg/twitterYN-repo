@@ -13,7 +13,8 @@ var app = express();
 
 app.io = require('socket.io')();
 
-
+// Instantiate SQS.
+var sqs = new aws.SQS({});
 
 //twitter cresidentals
 var twit = new Twitter({
