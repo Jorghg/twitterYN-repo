@@ -13,42 +13,6 @@ var app = express();
 
 app.io = require('socket.io')();
 
-// Instantiate SQS.
-var sqs = new aws.SQS({});
-
-//twitter cresidentals
-var twit = new Twitter({
-  consumer_key: 'XoP0cUhbC3KIzM5lqkkQpn06N',
-  consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
-  access_token: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
-  access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
-});
-
-//define stream
-var stream = twit.stream('statuses/filter',{language:'en',track: 'trump,clinton,obama'});
-
-//catch tweet
-stream.on('tweet',function(tweet) {
-  send(tweet);
-});
-
-// catch error
-stream.on('error', function(error) {
-  console.log('Stream error: ' + error.message);
-});
-
-// send tweet to queue
-function send(tweet) {
-  var params = {
-    MessageBody: JSON.stringify(tweet),
-    QueueUrl: "https://sqs.us-west-2.amazonaws.com/643927985634/Tweets010"
-  };
-  sqs.sendMessage(params, function(err, data) {
-    if (err){
-      console.log(err.message);
-    }
-  });
-}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
