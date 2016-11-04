@@ -6,7 +6,7 @@ module.exports = function (io) {
     var Twitter = require('twit');
     var natural = require('natural');
     var AWS = require("aws-sdk");
-    var sqs = new AWS.SQS({"accessKeyId":"AKIAIOM7TAAXGN4HKWHA", "secretAccessKey": "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", "region": "us-west-2"});
+    var sqs = new AWS.SQS({});
 
 
     AWS.config.update({
