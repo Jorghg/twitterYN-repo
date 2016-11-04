@@ -6,8 +6,7 @@ module.exports = function (io) {
     var Twitter = require('twit');
     var natural = require('natural');
     var AWS = require("aws-sdk");
-    var sqs = new AWS.SQS({});
-
+    var sqs = new AWS.SQS();
 
     AWS.config.update({
         region: "us-west-2",
@@ -57,6 +56,13 @@ module.exports = function (io) {
     natural.BayesClassifier.load('classifier.json', null, function(err, classifier) {
         Classifier = classifier;
     });
+
+    // Calls recieve function in interval
+    setInterval(function () {
+        if(ready == 'true'){
+            recieve();
+        }
+    },200);
 
     // on connect
     io.on('connection', function (socket) {
@@ -110,12 +116,6 @@ module.exports = function (io) {
             ready = req.body.status;
         });
 
-        // Calls recieve function in interval
-        setInterval(function () {
-            if(ready == 'true'){
-                recieve();
-            }
-        },200);
 
         socket.on('disconnect', function () {
             console.log('Socket disconnect');
@@ -166,6 +166,7 @@ module.exports = function (io) {
             if (data.Messages[0].Body != null){
                 var tweetObject = JSON.parse(data.Messages[0].Body);
                 var inTweet = tweetObject.text.toLowerCase();
+                console.log(inTweet);
                 if (inTweet.includes('trump')){
                     trump(tweetObject);
                     io.emit('trumpTweet',resultTweetTrump);
