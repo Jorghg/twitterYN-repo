@@ -1,0 +1,82 @@
+html, body {
+  max-width: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
+
+#header {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 300;
+  font-family: Verdana, Arial, sans-serif;
+  color: dimgrey;
+}
+
+#statusTweet {
+  font-family: Verdana, Arial, sans-serif;
+  color: dimgrey;
+  padding-bottom: 1%;
+}
+
+#name {
+    font-family: Verdana, Arial, sans-serif;
+    color: dimgrey;
+    font-size: xx-large;
+}
+
+#click {
+    text-align: left;
+    padding-left: 2em;
+}
+
+#ul {
+  list-style-type: none;
+}
+
+#pos {
+  color: green;
+
+}
+
+#neg{
+  color: red;
+
+}
+
+#count {
+    font-family: Verdana, Arial, sans-serif;
+    color: dimgrey;
+    font-size: small;
+}
+
+#stats {
+    font-size: large;
+    font-family: Verdana, Arial, sans-serif;
+}
+
+
+#feedTrump, #feedClinton, #feedObama {
+  height: 25em;
+  width: 25em;
+  overflow-y: auto;
+
+  display: inline-block;
+  font-family: Verdana, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 16px;
+
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.tweet {
+  height: auto;
+  border-radius: 5px;
+  border-style: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
