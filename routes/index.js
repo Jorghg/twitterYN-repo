@@ -2,10 +2,11 @@ module.exports = function (io) {
 
     var express = require('express');
     var router = express.Router();
+    var body = require('body-parser');
     var Twitter = require('twit');
     var natural = require('natural');
     var AWS = require("aws-sdk");
-    var sqs = new AWS.SQS({"accessKeyId":"AKIAID4S7EMMHOAWRRTA", "secretAccessKey": "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", "region": "us-west-2"});
+    var sqs = new AWS.SQS({"accessKeyId":"AKIAIOM7TAAXGN4HKWHA", "secretAccessKey": "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", "region": "us-west-2"});
 
 
     AWS.config.update({
@@ -13,32 +14,21 @@ module.exports = function (io) {
         endpoint: "https://dynamodb.us-west-2.amazonaws.com"
         });
 
-    var docClient = new AWS.DynamoDB.DocumentClient();
-
-    var table = "TrumpStats";
-
-
     //start page
     router.get('/', function(req, res, next) {
         res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
-        run = setInterval(recieve,200);
     });
 
-    router.get('/start', function (req, res, next) {
-        res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
-        run = setInterval(recieve,200);
-    });
+    var docClient = new AWS.DynamoDB.DocumentClient();
 
-    router.get('/stop', function (req, res, next) {
-        res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
-        clearInterval(run);
-    });
+    // DB table
+    var table = "TrumpStats";
 
     // classifier for sentiment
     var Classifier = '';
 
     //global variables...
-    var socketConnected = 0;
+    var socketConnected = [];
     var yey = '';
     var userId = 0;
     var socketId = 0;
@@ -72,8 +62,8 @@ module.exports = function (io) {
     io.on('connection', function (socket) {
 
         socketId = socket.id;
-        socketConnected += 1;
-        console.log('Sockets connected: ' + socketConnected);
+        socketConnected.push(socketId);
+        console.log('Sockets connected: ' + socketConnected.length);
 
         // load stats from db
         var paramsQuery = {
@@ -108,50 +98,61 @@ module.exports = function (io) {
                     negObama = resultObama - posObama;
                 });
 
-                ready = true;
+
             }
         });
 
+        //buffer stream
+        router.post('/', function(req, res, next) {
+            res.render('index', { title: 'Trump, Yey or Ney?', userId: userId});
+            console.log('body: ' + JSON.stringify(req.body));
+        });
+
+        // Calls recieve function in interval
+        setInterval(function () {
+            recieve();
+        },200);
+
         socket.on('disconnect', function () {
-            socketConnected -= 1;
-            console.log('Disconnect');
-            console.log('Sockets connected:' + socketConnected);
-            // if no sockets are connected, update db
-            if (socketConnected == 0){
-                console.log('stopped');
-                var params = {
-                    TableName:table,
-                    Key:{
-                        "ID": 1
-                    },
-                    UpdateExpression: "set posTrump=:pT, posClinton=:pC, posObama=:pO, countTrump=:cT, countClinton=:cC, countObama=:cO",
-                    ExpressionAttributeValues:{
-                        ":pT":posTrump,
-                        ":pC":posClinton,
-                        ":pO":posObama,
-                        ":cT":resultTrump,
-                        ":cC":resultClinton,
-                        ":cO":resultObama
-                    },
-                    ReturnValues:"UPDATED_NEW"
-                };
-
-
-                console.log("Updating the item...");
-                docClient.update(params, function(err, data) {
-                    if (err) {
-                        console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
-                    }  else  {
-                        console.log("Database updated with items: ", data);
-                    }
-                });
-
+            console.log('Socket disconnect');
+            // remove from socket list
+            var index = socketConnected.indexOf(socketId);
+            if (index > -1) {
+                socketConnected.splice(index, 1);
             }
+            console.log('Sockets connected:' + socketConnected.length);
+
+            // Update DB
+            var params = {
+                TableName:table,
+                Key:{
+                    "ID": 1
+                },
+                UpdateExpression: "set posTrump=:pT, posClinton=:pC, posObama=:pO, countTrump=:cT, countClinton=:cC, countObama=:cO",
+                ExpressionAttributeValues:{
+                    ":pT":posTrump,
+                    ":pC":posClinton,
+                    ":pO":posObama,
+                    ":cT":resultTrump,
+                    ":cC":resultClinton,
+                    ":cO":resultObama
+                },
+                ReturnValues:"UPDATED_NEW"
+            };
+
+            console.log("Updating DB...");
+            docClient.update(params, function(err, data) {
+                if (err) {
+                    console.log("Unable to add to DB: Error JSON", JSON.stringify(err, null, 2));
+                }  else  {
+                    console.log("Database updated with items: ", data);
+                }
+            });
         });
 
     });
 
-    // recieve tweets from SQS, analyse and emits
+    // Pulls tweets from SQS, analyse and emit
     var recieve = function () {
         var params = {
             QueueUrl: "https://sqs.us-west-2.amazonaws.com/643927985634/Tweets010",

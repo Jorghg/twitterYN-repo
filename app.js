@@ -13,8 +13,7 @@ var app = express();
 
 app.io = require('socket.io')();
 
-// Instantiate SQS.
-var sqs = new aws.SQS({"accessKeyId":"AKIAID4S7EMMHOAWRRTA", "secretAccessKey": "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", "region": "us-west-2"});
+
 
 //twitter cresidentals
 var twit = new Twitter({
@@ -22,22 +21,6 @@ var twit = new Twitter({
   consumer_secret: 'k0ImtPjZ6iN1DwIZaBZrHuLIxxhtnRMaeycIreKJ9AN2JFu7sP',
   access_token: '1917108290-38rqsxvEuJmXKOmBrsqHuygsO09MBTTJrFr5l3Z',
   access_token_secret: 'bY1tBzx9BgF5PYlsm8DQmCEGRnkj1SMO6w4lJsbcjePun'
-});
-
-app.get('/receive', function (req, res) {
-  var params = {
-    QueueUrl: "https://sqs.us-west-2.amazonaws.com/643927985634/Tweets010",
-    MaxNumberOfMessages: 10
-  };
-
-  sqs.receiveMessage(params, function(err, data) {
-    if(err) {
-      res.send(err);
-    }
-    else {
-      res.send(data);
-    }
-  });
 });
 
 //define stream
@@ -53,7 +36,7 @@ stream.on('error', function(error) {
   console.log('Stream error: ' + error.message);
 });
 
-
+// send tweet to queue
 function send(tweet) {
   var params = {
     MessageBody: JSON.stringify(tweet),
@@ -65,7 +48,6 @@ function send(tweet) {
     }
   });
 }
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

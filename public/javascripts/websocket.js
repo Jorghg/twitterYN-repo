@@ -1,7 +1,33 @@
 $(function () {
     var socket = io.connect('/');
 
+    var $checkStream = $('#stream');
+
+    var stream = true;
+
     $(document).ready(function () {
+
+        console.log(stream);
+        $checkStream.click(function () {
+            if ($('#stream').prop("checked"))
+            {
+                stream=true;
+            } else {
+                stream=false;
+            }
+            $.ajax({
+                type: 'POST',
+                data: stream,
+                contentType: 'application/json',
+                url: '/',
+                success: function() {
+                    console.log(stream);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        });
 
 
     socket.on('trumpTweet', function (data) {
